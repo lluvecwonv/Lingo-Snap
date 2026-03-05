@@ -1,8 +1,9 @@
 // tts.js - Text-to-Speech module using Web Speech API
 
 const TTS = (() => {
-  let preferredVoice = null;
+  let voices = { en: null, ja: null };
   let isSpeaking = false;
+  let voicesLoaded = false;
 
   function init() {
     if (!('speechSynthesis' in window)) {
@@ -14,27 +15,48 @@ const TTS = (() => {
   }
 
   function loadVoices() {
-    const voices = speechSynthesis.getVoices();
-    // Prefer high-quality en-US voices
-    const preferred = ['Samantha', 'Karen', 'Google US English', 'Microsoft Zira'];
-    for (const name of preferred) {
-      const found = voices.find(v => v.name.includes(name) && v.lang.startsWith('en'));
-      if (found) { preferredVoice = found; return; }
+    const allVoices = speechSynthesis.getVoices();
+    if (allVoices.length === 0) return;
+    voicesLoaded = true;
+
+    // English voice
+    const enPreferred = ['Samantha', 'Karen', 'Google US English', 'Microsoft Zira'];
+    for (const name of enPreferred) {
+      const found = allVoices.find(v => v.name.includes(name) && v.lang.startsWith('en'));
+      if (found) { voices.en = found; break; }
     }
-    // Fallback: any en-US voice
-    preferredVoice = voices.find(v => v.lang.startsWith('en-US')) ||
-                     voices.find(v => v.lang.startsWith('en')) || null;
+    if (!voices.en) {
+      voices.en = allVoices.find(v => v.lang.startsWith('en-US')) ||
+                  allVoices.find(v => v.lang.startsWith('en')) || null;
+    }
+
+    // Japanese voice
+    const jaPreferred = ['Kyoko', 'O-Ren', 'Google 日本語', 'Microsoft Haruka'];
+    for (const name of jaPreferred) {
+      const found = allVoices.find(v => v.name.includes(name) && v.lang.startsWith('ja'));
+      if (found) { voices.ja = found; break; }
+    }
+    if (!voices.ja) {
+      voices.ja = allVoices.find(v => v.lang.startsWith('ja')) || null;
+    }
   }
 
-  function speak(text, rate = 0.9) {
+  function speak(text, rate = 0.9, lang = null) {
     if (!('speechSynthesis' in window) || !text) return;
     speechSynthesis.cancel();
 
+    // Auto-detect language if not specified
+    if (!lang) {
+      lang = /[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf]/.test(text) ? 'ja' : 'en';
+    }
+
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
+    utterance.lang = lang === 'ja' ? 'ja-JP' : 'en-US';
     utterance.rate = rate;
     utterance.pitch = 1.0;
-    if (preferredVoice) utterance.voice = preferredVoice;
+
+    const voice = lang === 'ja' ? voices.ja : voices.en;
+    if (voice) utterance.voice = voice;
 
     utterance.onstart = () => { isSpeaking = true; };
     utterance.onend = () => { isSpeaking = false; };
@@ -43,8 +65,8 @@ const TTS = (() => {
     speechSynthesis.speak(utterance);
   }
 
-  function speakSlow(text) {
-    speak(text, 0.6);
+  function speakSlow(text, lang = null) {
+    speak(text, 0.6, lang);
   }
 
   function stop() {
