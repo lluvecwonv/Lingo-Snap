@@ -14,7 +14,10 @@
 <body>
   <header class="header">
     <div class="header-inner">
-      <h1 class="logo">Lingo Snap <span class="logo-sub">내 콘텐츠</span></h1>
+      <div class="header-left">
+        <a href="/language" class="back-link" title="언어 선택">←</a>
+        <h1 class="logo">Lingo Snap <span class="logo-sub" id="lang-label">English</span></h1>
+      </div>
       <div class="header-actions">
         <span id="user-display" class="user-display"></span>
         <button id="add-content-btn" class="btn btn-primary">+ 새 콘텐츠</button>
@@ -23,16 +26,6 @@
       </div>
     </div>
   </header>
-
-  <!-- Language Selector -->
-  <div class="language-selector" id="language-selector">
-    <button class="language-card active" data-lang="english">
-      <span class="lang-flag">🇺🇸</span> English
-    </button>
-    <button class="language-card" data-lang="japanese">
-      <span class="lang-flag">🇯🇵</span> 日本語
-    </button>
-  </div>
 
   <!-- Category Tabs + View Toggle -->
   <div class="contents-toolbar">
@@ -200,33 +193,18 @@
         currentUser = await API.get('/me');
         if (!currentUser) return;
         document.getElementById('user-display').textContent = currentUser.username;
-        initLanguageSelector();
+        // Set lang label from localStorage
+        const langLabel = document.getElementById('lang-label');
+        if (langLabel) langLabel.textContent = activeLang === 'japanese' ? '日本語' : 'English';
+        // Sync modal language default
+        const langRadio = document.querySelector(`input[name="content-language"][value="${activeLang}"]`);
+        if (langRadio) langRadio.checked = true;
         initViewToggle();
         initThumbnailUpload();
         await loadContents();
       } catch {
         window.location.href = '/login';
       }
-    }
-
-    function initLanguageSelector() {
-      const selector = document.getElementById('language-selector');
-      selector.querySelectorAll('.language-card').forEach(btn => {
-        if (btn.dataset.lang === activeLang) btn.classList.add('active');
-        else btn.classList.remove('active');
-        btn.addEventListener('click', () => {
-          activeLang = btn.dataset.lang;
-          localStorage.setItem('selected_language', activeLang);
-          selector.querySelectorAll('.language-card').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          activeTab = 'all';
-          renderTabs();
-          renderGrid();
-        });
-      });
-      // Sync modal language default
-      const langRadio = document.querySelector(`input[name="content-language"][value="${activeLang}"]`);
-      if (langRadio) langRadio.checked = true;
     }
 
     function initViewToggle() {

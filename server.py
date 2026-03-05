@@ -37,6 +37,11 @@ async def login_page():
     return FileResponse(os.path.join(frontend_dir, "login.html"))
 
 
+@app.get("/language")
+async def language_page():
+    return FileResponse(os.path.join(frontend_dir, "language.html"))
+
+
 @app.get("/contents")
 async def contents_page():
     return FileResponse(os.path.join(frontend_dir, "contents.html"))

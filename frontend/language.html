@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingo Snap - 언어 선택</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <meta property="og:title" content="Lingo Snap">
+  <meta property="og:description" content="영어 & 일본어 표현 학습">
+  <meta property="og:image" content="/static/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="lang-select-body">
+  <div class="lang-select-container">
+    <h1 class="lang-select-logo">Lingo Snap</h1>
+    <p class="lang-select-subtitle">어떤 언어를 공부할까요?</p>
+
+    <div class="lang-select-grid">
+      <button class="lang-select-card" data-lang="english" onclick="selectLanguage('english')">
+        <span class="lang-select-flag">🇺🇸</span>
+        <span class="lang-select-name">English</span>
+        <span class="lang-select-desc">영어 표현 학습</span>
+      </button>
+      <button class="lang-select-card" data-lang="japanese" onclick="selectLanguage('japanese')">
+        <span class="lang-select-flag">🇯🇵</span>
+        <span class="lang-select-name">日本語</span>
+        <span class="lang-select-desc">일본어 표현 학습</span>
+      </button>
+    </div>
+
+    <p class="lang-select-hint">언제든 다시 돌아와서 바꿀 수 있어요</p>
+    <button class="btn btn-outline lang-logout-btn" onclick="logout()">로그아웃</button>
+  </div>
+
+  <script src="/static/api.js"></script>
+  <script>
+    // Check auth
+    (async () => {
+      try {
+        const user = await API.get('/me');
+        if (!user) window.location.href = '/login';
+      } catch {
+        window.location.href = '/login';
+      }
+    })();
+
+    function selectLanguage(lang) {
+      localStorage.setItem('selected_language', lang);
+      window.location.href = '/contents';
+    }
+
+    async function logout() {
+      await API.post('/logout', {});
+      window.location.href = '/login';
+    }
+  </script>
+</body>
+</html>

@@ -47,7 +47,7 @@
   <script>
     // Check if already logged in
     fetch('/api/me', { credentials: 'include' })
-      .then(r => { if (r.ok) window.location.href = '/contents'; });
+      .then(r => { if (r.ok) window.location.href = '/language'; });
 
     function switchTab(tab) {
       document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
@@ -75,7 +75,7 @@
           errEl.textContent = data.detail || '로그인 실패';
           return;
         }
-        window.location.href = '/contents';
+        window.location.href = '/language';
       } catch (err) {
         errEl.textContent = '서버 연결 실패';
       }
@@ -104,7 +104,7 @@
           errEl.textContent = data.detail || '회원가입 실패';
           return;
         }
-        window.location.href = '/contents';
+        window.location.href = '/language';
       } catch (err) {
         errEl.textContent = '서버 연결 실패';
       }

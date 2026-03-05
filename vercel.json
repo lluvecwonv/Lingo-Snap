@@ -14,6 +14,7 @@
   "routes": [
     { "src": "/static/(.*)", "dest": "/frontend/$1" },
     { "src": "/login", "dest": "/api/index.py" },
+    { "src": "/language", "dest": "/api/index.py" },
     { "src": "/contents", "dest": "/api/index.py" },
     { "src": "/expressions", "dest": "/api/index.py" },
     { "src": "/api/(.*)", "dest": "/api/index.py" },
