@@ -7,6 +7,7 @@ const App = (() => {
   let contentLanguage = 'english';  // english / japanese
   let expressions = [];
   let editingId = null;
+  let exprViewMode = localStorage.getItem('expr_view_mode') || 'card';
 
   // Platforms that have season/episode
   const HAS_SEASON = ['netflix', 'youtube'];
@@ -126,8 +127,16 @@ const App = (() => {
 
     noResults.classList.add('hidden');
 
+    // Apply view mode class
+    grid.classList.toggle('cards-grid', exprViewMode === 'card');
+    grid.classList.toggle('expr-list', exprViewMode === 'list');
+
+    if (exprViewMode === 'list') {
+      renderListView(grid, query);
+      return;
+    }
+
     if (hasSeason()) {
-      // Group by season → episode
       const groups = {};
       expressions.forEach(expr => {
         const key = `${expr.season}-${expr.episode}`;
@@ -148,9 +157,62 @@ const App = (() => {
         return header + cards;
       }).join('');
     } else {
-      // No grouping - just render cards
       grid.innerHTML = expressions.map(expr => renderSingleCard(expr, query)).join('');
     }
+  }
+
+  function renderListView(grid, query) {
+    const diffLabel = { beginner: '초급', intermediate: '중급', advanced: '고급' };
+    const diffClass = { beginner: 'diff-beginner', intermediate: 'diff-intermediate', advanced: 'diff-advanced' };
+
+    const header = `<div class="list-header">
+      <span class="list-col-expr">표현</span>
+      <span class="list-col-meaning">뜻</span>
+      <span class="list-col-diff">난이도</span>
+      <span class="list-col-actions"></span>
+    </div>`;
+
+    const rows = expressions.map(expr => {
+      const displayExpr = query ? highlight(expr.expression, query) : escapeHtml(expr.expression);
+      const displayMeaning = query ? highlight(expr.korean_meaning, query) : escapeHtml(expr.korean_meaning);
+      const diff = diffLabel[expr.difficulty] || '';
+      const dc = diffClass[expr.difficulty] || '';
+
+      return `<div class="list-row" data-id="${expr.id}">
+        <span class="list-col-expr">
+          <button class="tts-btn-mini" onclick="event.stopPropagation(); TTS.speak('${escapeSingleQuote(expr.expression)}')" title="듣기">🔊</button>
+          ${displayExpr}
+        </span>
+        <span class="list-col-meaning">${displayMeaning}</span>
+        <span class="list-col-diff"><span class="diff-badge ${dc}">${diff}</span></span>
+        <span class="list-col-actions">
+          <button class="list-action-btn" onclick="event.stopPropagation(); App.editExpression(${expr.id})" title="수정">✏️</button>
+          <button class="list-action-btn delete" onclick="event.stopPropagation(); App.deleteExpression(${expr.id})" title="삭제">🗑</button>
+        </span>
+      </div>`;
+    }).join('');
+
+    grid.innerHTML = header + rows;
+
+    // Click row to expand detail
+    grid.querySelectorAll('.list-row').forEach(row => {
+      row.addEventListener('click', () => {
+        row.classList.toggle('expanded');
+        const id = parseInt(row.dataset.id);
+        if (row.classList.contains('expanded') && !row.querySelector('.list-detail')) {
+          const expr = expressions.find(e => e.id === id);
+          if (!expr) return;
+          const detail = document.createElement('div');
+          detail.className = 'list-detail';
+          let html = '';
+          if (expr.korean_explanation) html += `<p class="list-detail-explanation">${escapeHtml(expr.korean_explanation).replace(/\n/g, '<br>')}</p>`;
+          const tags = (expr.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+          if (tags) html += `<div class="card-tags">${tags}</div>`;
+          detail.innerHTML = html;
+          row.appendChild(detail);
+        }
+      });
+    });
   }
 
   function renderSingleCard(expr, query) {
@@ -221,6 +283,19 @@ const App = (() => {
 
     ['filter-season', 'filter-episode', 'filter-difficulty'].forEach(id => {
       document.getElementById(id).addEventListener('change', loadExpressions);
+    });
+
+    // View mode toggle
+    document.querySelectorAll('.expr-view-btn').forEach(btn => {
+      if (btn.dataset.view === exprViewMode) btn.classList.add('active');
+      else btn.classList.remove('active');
+      btn.addEventListener('click', () => {
+        exprViewMode = btn.dataset.view;
+        localStorage.setItem('expr_view_mode', exprViewMode);
+        document.querySelectorAll('.expr-view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderCards();
+      });
     });
 
     document.getElementById('add-btn').addEventListener('click', () => openModal());
