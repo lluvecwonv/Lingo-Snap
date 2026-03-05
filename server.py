@@ -5,7 +5,7 @@ load_dotenv()
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
-from database import init_db
+from database import init_db, migrate_db
 from routers import auth_router, content_router, expression_router
 
 app = FastAPI(title="Lingo Snap")
@@ -23,6 +23,7 @@ app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
 @app.on_event("startup")
 def startup():
     init_db()
+    migrate_db()
 
 
 # Page routes

@@ -20,7 +20,9 @@ class Content(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(200), nullable=False)
     platform = Column(String(20), nullable=False)  # netflix / youtube
+    language = Column(String(10), default="english")  # english / japanese
     url = Column(Text, default="")
+    thumbnail_url = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="contents")
     expressions = relationship("Expression", back_populates="content", cascade="all, delete-orphan")

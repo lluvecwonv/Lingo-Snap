@@ -24,8 +24,24 @@
     </div>
   </header>
 
-  <!-- Category Tabs -->
-  <nav class="category-tabs" id="category-tabs"></nav>
+  <!-- Language Selector -->
+  <div class="language-selector" id="language-selector">
+    <button class="language-card active" data-lang="english">
+      <span class="lang-flag">🇺🇸</span> English
+    </button>
+    <button class="language-card" data-lang="japanese">
+      <span class="lang-flag">🇯🇵</span> 日本語
+    </button>
+  </div>
+
+  <!-- Category Tabs + View Toggle -->
+  <div class="contents-toolbar">
+    <nav class="category-tabs" id="category-tabs" style="margin:0;padding:0;flex:1"></nav>
+    <div class="view-toggle">
+      <button class="view-toggle-btn active" data-view="grid" title="그리드 보기">▦</button>
+      <button class="view-toggle-btn" data-view="list" title="리스트 보기">☰</button>
+    </div>
+  </div>
 
   <main class="contents-page">
     <div id="contents-grid" class="contents-grid"></div>
@@ -34,12 +50,24 @@
 
   <!-- Add Content Modal -->
   <div id="content-modal" class="modal-overlay hidden">
-    <div class="modal modal-sm">
+    <div class="modal">
       <div class="modal-header">
         <h2>새 콘텐츠 추가</h2>
         <button class="modal-close" onclick="document.getElementById('content-modal').classList.add('hidden')">&times;</button>
       </div>
       <form id="content-form" class="modal-body">
+        <label>언어</label>
+        <div class="language-options">
+          <label class="language-label">
+            <input type="radio" name="content-language" value="english" checked>
+            <span class="lang-badge">🇺🇸 English</span>
+          </label>
+          <label class="language-label">
+            <input type="radio" name="content-language" value="japanese">
+            <span class="lang-badge">🇯🇵 日本語</span>
+          </label>
+        </div>
+
         <label>카테고리</label>
         <div class="platform-options">
           <label class="platform-label">
@@ -74,6 +102,15 @@
 
         <label>링크 (선택)</label>
         <input type="text" id="content-url" placeholder="https://...">
+
+        <label>표지 이미지 (선택)</label>
+        <div class="thumbnail-upload-area">
+          <input type="file" id="thumbnail-input" accept="image/*">
+          <div id="thumbnail-preview" class="thumbnail-preview">
+            <img id="thumbnail-preview-img" src="" alt="">
+          </div>
+          <button type="button" id="thumbnail-remove" class="thumbnail-remove-btn" style="display:none" onclick="removeThumbnail()">이미지 제거</button>
+        </div>
 
         <div class="form-actions">
           <button type="button" class="btn btn-outline" onclick="document.getElementById('content-modal').classList.add('hidden')">취소</button>
@@ -143,21 +180,115 @@
     let currentUser = null;
     let allContents = [];
     let activeTab = 'all';
+    let activeLang = localStorage.getItem('selected_language') || 'english';
+    let viewMode = localStorage.getItem('view_mode') || 'grid';
+    let pendingThumbnail = '';
 
     const platformLabels = {
       netflix: 'Netflix', youtube: 'YouTube', book: '원서',
       paper: '논문', dictionary: '단어사전', other: '기타'
     };
 
+    // Deterministic pastel color from content ID
+    function pastelColor(id) {
+      const h = (id * 137) % 360;
+      return `hsl(${h}, 45%, 80%)`;
+    }
+
     async function init() {
       try {
         currentUser = await API.get('/me');
         if (!currentUser) return;
         document.getElementById('user-display').textContent = currentUser.username;
+        initLanguageSelector();
+        initViewToggle();
+        initThumbnailUpload();
         await loadContents();
       } catch {
         window.location.href = '/login';
       }
+    }
+
+    function initLanguageSelector() {
+      const selector = document.getElementById('language-selector');
+      selector.querySelectorAll('.language-card').forEach(btn => {
+        if (btn.dataset.lang === activeLang) btn.classList.add('active');
+        else btn.classList.remove('active');
+        btn.addEventListener('click', () => {
+          activeLang = btn.dataset.lang;
+          localStorage.setItem('selected_language', activeLang);
+          selector.querySelectorAll('.language-card').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeTab = 'all';
+          renderTabs();
+          renderGrid();
+        });
+      });
+      // Sync modal language default
+      const langRadio = document.querySelector(`input[name="content-language"][value="${activeLang}"]`);
+      if (langRadio) langRadio.checked = true;
+    }
+
+    function initViewToggle() {
+      const grid = document.getElementById('contents-grid');
+      document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+        if (btn.dataset.view === viewMode) btn.classList.add('active');
+        else btn.classList.remove('active');
+        btn.addEventListener('click', () => {
+          viewMode = btn.dataset.view;
+          localStorage.setItem('view_mode', viewMode);
+          document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          applyViewMode();
+        });
+      });
+      applyViewMode();
+    }
+
+    function applyViewMode() {
+      const grid = document.getElementById('contents-grid');
+      grid.classList.toggle('list-view', viewMode === 'list');
+    }
+
+    function initThumbnailUpload() {
+      const input = document.getElementById('thumbnail-input');
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        resizeImage(file, 400, 250, 0.7, (dataUrl) => {
+          pendingThumbnail = dataUrl;
+          const preview = document.getElementById('thumbnail-preview');
+          document.getElementById('thumbnail-preview-img').src = dataUrl;
+          preview.classList.add('has-image');
+          document.getElementById('thumbnail-remove').style.display = 'block';
+        });
+      });
+    }
+
+    function resizeImage(file, maxW, maxH, quality, callback) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxW) { h = h * maxW / w; w = maxW; }
+          if (h > maxH) { w = w * maxH / h; h = maxH; }
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          callback(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeThumbnail() {
+      pendingThumbnail = '';
+      document.getElementById('thumbnail-input').value = '';
+      document.getElementById('thumbnail-preview').classList.remove('has-image');
+      document.getElementById('thumbnail-remove').style.display = 'none';
     }
 
     async function loadContents() {
@@ -166,17 +297,20 @@
       renderGrid();
     }
 
+    function getFilteredByLang() {
+      return allContents.filter(c => (c.language || 'english') === activeLang);
+    }
+
     function renderTabs() {
       const tabsEl = document.getElementById('category-tabs');
-      // Count per platform
+      const langContents = getFilteredByLang();
       const counts = {};
-      allContents.forEach(c => {
+      langContents.forEach(c => {
         counts[c.platform] = (counts[c.platform] || 0) + 1;
       });
 
-      // Build tabs: "전체" + each platform that has contents
       const platformOrder = ['netflix', 'youtube', 'book', 'paper', 'dictionary', 'other'];
-      let html = `<button class="category-tab ${activeTab === 'all' ? 'active' : ''}" data-tab="all">전체<span class="tab-count">${allContents.length}</span></button>`;
+      let html = `<button class="category-tab ${activeTab === 'all' ? 'active' : ''}" data-tab="all">전체<span class="tab-count">${langContents.length}</span></button>`;
 
       platformOrder.forEach(p => {
         if (counts[p]) {
@@ -186,7 +320,6 @@
 
       tabsEl.innerHTML = html;
 
-      // Bind tab clicks
       tabsEl.querySelectorAll('.category-tab').forEach(btn => {
         btn.addEventListener('click', () => {
           activeTab = btn.dataset.tab;
@@ -198,9 +331,10 @@
     }
 
     function renderGrid() {
+      const langContents = getFilteredByLang();
       const filtered = activeTab === 'all'
-        ? allContents
-        : allContents.filter(c => c.platform === activeTab);
+        ? langContents
+        : langContents.filter(c => c.platform === activeTab);
 
       const grid = document.getElementById('contents-grid');
       const noMsg = document.getElementById('no-contents');
@@ -208,23 +342,36 @@
       if (filtered.length === 0) {
         grid.innerHTML = '';
         noMsg.classList.remove('hidden');
+        const langName = activeLang === 'japanese' ? '日本語' : 'English';
         noMsg.textContent = activeTab === 'all'
-          ? '아직 콘텐츠가 없습니다. 새 콘텐츠를 추가해보세요!'
+          ? `${langName} 콘텐츠가 없습니다. 새 콘텐츠를 추가해보세요!`
           : `${platformLabels[activeTab] || activeTab} 콘텐츠가 없습니다.`;
         return;
       }
 
       noMsg.classList.add('hidden');
-      grid.innerHTML = filtered.map(c => `
+      grid.innerHTML = filtered.map(c => {
+        const thumbHtml = c.thumbnail_url
+          ? `<img src="${c.thumbnail_url}" alt="${escapeHtml(c.title)}">`
+          : `<div class="thumbnail-title">${escapeHtml(c.title)}</div>`;
+        const bgStyle = c.thumbnail_url ? '' : `background:${pastelColor(c.id)}`;
+
+        return `
         <div class="content-card" onclick="window.location.href='/expressions?content_id=${c.id}'">
-          <div class="content-card-top">
-            <span class="platform-badge ${c.platform}">${platformLabels[c.platform] || c.platform}</span>
-            <button class="card-action-btn delete" onclick="event.stopPropagation(); deleteContent(${c.id}, '${c.title.replace(/'/g, "\\'")}')" title="삭제">&#x2715;</button>
+          <div class="content-thumbnail" style="${bgStyle}">
+            ${thumbHtml}
           </div>
-          <h3 class="content-title">${escapeHtml(c.title)}</h3>
-          <p class="content-count">${c.expression_count}개 표현</p>
+          <div class="content-card-body">
+            <div class="content-card-top">
+              <span class="platform-badge ${c.platform}">${platformLabels[c.platform] || c.platform}</span>
+              <button class="card-action-btn delete" onclick="event.stopPropagation(); deleteContent(${c.id}, '${c.title.replace(/'/g, "\\'")}')" title="삭제">&#x2715;</button>
+            </div>
+            <h3 class="content-title">${escapeHtml(c.title)}</h3>
+            <p class="content-count">${c.expression_count}개 표현</p>
+          </div>
         </div>
-      `).join('');
+      `}).join('');
+      applyViewMode();
     }
 
     async function deleteContent(id, title) {
@@ -234,6 +381,10 @@
     }
 
     document.getElementById('add-content-btn').addEventListener('click', () => {
+      // Sync modal language with current selection
+      const langRadio = document.querySelector(`input[name="content-language"][value="${activeLang}"]`);
+      if (langRadio) langRadio.checked = true;
+      removeThumbnail();
       document.getElementById('content-modal').classList.remove('hidden');
     });
 
@@ -241,11 +392,13 @@
       e.preventDefault();
       const title = document.getElementById('content-title').value.trim();
       const platform = document.querySelector('input[name="platform"]:checked').value;
+      const language = document.querySelector('input[name="content-language"]:checked').value;
       const url = document.getElementById('content-url').value.trim();
 
-      await API.post('/contents', { title, platform, url });
+      await API.post('/contents', { title, platform, language, url, thumbnail_url: pendingThumbnail });
       document.getElementById('content-modal').classList.add('hidden');
       document.getElementById('content-form').reset();
+      removeThumbnail();
       await loadContents();
     });
 

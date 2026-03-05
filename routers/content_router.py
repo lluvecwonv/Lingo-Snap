@@ -11,7 +11,9 @@ router = APIRouter(prefix="/api/contents", tags=["contents"])
 class ContentCreate(BaseModel):
     title: str
     platform: str  # netflix / youtube
+    language: str = "english"  # english / japanese
     url: str = ""
+    thumbnail_url: str = ""
 
 
 @router.get("")
@@ -22,7 +24,9 @@ def list_contents(user: User = Depends(get_current_user), db: Session = Depends(
             "id": c.id,
             "title": c.title,
             "platform": c.platform,
+            "language": c.language or "english",
             "url": c.url,
+            "thumbnail_url": c.thumbnail_url or "",
             "expression_count": len(c.expressions),
         }
         for c in contents
@@ -33,11 +37,17 @@ def list_contents(user: User = Depends(get_current_user), db: Session = Depends(
 def create_content(req: ContentCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not req.title.strip():
         raise HTTPException(400, "콘텐츠 제목을 입력해주세요")
-    content = Content(user_id=user.id, title=req.title.strip(), platform=req.platform, url=req.url)
+    content = Content(
+        user_id=user.id, title=req.title.strip(), platform=req.platform,
+        language=req.language, url=req.url, thumbnail_url=req.thumbnail_url or None
+    )
     db.add(content)
     db.commit()
     db.refresh(content)
-    return {"id": content.id, "title": content.title, "platform": content.platform, "url": content.url}
+    return {
+        "id": content.id, "title": content.title, "platform": content.platform,
+        "language": content.language, "url": content.url, "thumbnail_url": content.thumbnail_url or ""
+    }
 
 
 @router.delete("/{content_id}")

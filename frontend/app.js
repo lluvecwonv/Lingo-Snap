@@ -4,6 +4,7 @@ const App = (() => {
   let contentId = null;
   let contentTitle = '';
   let contentPlatform = '';  // netflix, youtube, book, paper, dictionary, other
+  let contentLanguage = 'english';  // english / japanese
   let expressions = [];
   let editingId = null;
 
@@ -36,6 +37,7 @@ const App = (() => {
       if (c) {
         contentTitle = c.title;
         contentPlatform = c.platform || '';
+        contentLanguage = c.language || 'english';
         document.getElementById('content-title-display').textContent = c.title;
         document.title = `${c.title} - Lingo Snap`;
       }
@@ -265,7 +267,7 @@ const App = (() => {
     loading.classList.remove('hidden');
 
     try {
-      const result = await API.post('/generate', { expression, platform: contentPlatform });
+      const result = await API.post('/generate', { expression, platform: contentPlatform, language: contentLanguage });
       if (!result) return;
 
       document.getElementById('form-meaning').value = result.korean_meaning || '';
@@ -433,7 +435,7 @@ const App = (() => {
     loading.classList.remove('hidden');
 
     try {
-      const result = await API.post('/generate', { expression: word, platform: contentPlatform });
+      const result = await API.post('/generate', { expression: word, platform: contentPlatform, language: contentLanguage });
       if (!result) return;
       document.getElementById('word-meaning').value = result.korean_meaning || '';
       document.getElementById('word-explanation').value = result.korean_explanation || '';
@@ -517,7 +519,7 @@ const App = (() => {
     loading.classList.remove('hidden');
 
     try {
-      const result = await API.post('/generate-structure', { expression: sentence, platform: contentPlatform });
+      const result = await API.post('/generate-structure', { expression: sentence, platform: contentPlatform, language: contentLanguage });
       if (!result) return;
 
       document.getElementById('structure-expression').value = result.expression || '';

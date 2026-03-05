@@ -31,6 +31,7 @@ class ExpressionUpdate(ExpressionCreate):
 class GenerateRequest(BaseModel):
     expression: str
     platform: str = ""
+    language: str = "english"
 
 
 def _check_content_access(content_id: int, user: User, db: Session) -> Content:
@@ -181,7 +182,7 @@ def generate(req: GenerateRequest, user: User = Depends(get_current_user)):
     if not req.expression.strip():
         raise HTTPException(400, "영어 표현을 입력해주세요")
     try:
-        result = generate_expression_data(req.expression.strip(), req.platform)
+        result = generate_expression_data(req.expression.strip(), req.platform, req.language)
         return result
     except Exception as e:
         raise HTTPException(502, f"GPT 생성 오류: {str(e)}")
@@ -192,7 +193,7 @@ def generate_structure(req: GenerateRequest, user: User = Depends(get_current_us
     if not req.expression.strip():
         raise HTTPException(400, "영어 문장을 입력해주세요")
     try:
-        result = generate_structure_data(req.expression.strip(), req.platform)
+        result = generate_structure_data(req.expression.strip(), req.platform, req.language)
         return result
     except Exception as e:
         raise HTTPException(502, f"GPT 생성 오류: {str(e)}")

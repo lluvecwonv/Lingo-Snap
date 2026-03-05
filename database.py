@@ -32,6 +32,22 @@ def init_db():
     Base.metadata.create_all(bind=engine)
 
 
+def migrate_db():
+    """Add new columns to existing tables (safe to run multiple times)."""
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        migrations = [
+            "ALTER TABLE contents ADD COLUMN language VARCHAR(10) DEFAULT 'english'",
+            "ALTER TABLE contents ADD COLUMN thumbnail_url TEXT",
+        ]
+        for sql in migrations:
+            try:
+                conn.execute(text(sql))
+                conn.commit()
+            except Exception:
+                conn.rollback()
+
+
 def seed_data_for_user(user_id: int, db):
     """Import data.json expressions for a new user's first content."""
     from models import Content, Expression
