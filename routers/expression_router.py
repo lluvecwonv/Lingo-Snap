@@ -1,6 +1,4 @@
-import os
 import json
-import traceback
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -11,28 +9,6 @@ from auth import get_current_user
 from gpt_service import generate_expression_data, generate_structure_data
 
 router = APIRouter(prefix="/api", tags=["expressions"])
-
-
-@router.get("/debug-openai")
-def debug_openai():
-    """Temporary debug endpoint to test OpenAI connectivity."""
-    key = os.getenv("OPENAI_API_KEY", "")
-    result = {"key_length": len(key), "key_prefix": key[:15] if key else "EMPTY"}
-    try:
-        from openai import OpenAI
-        client = OpenAI(api_key=key)
-        r = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "say hi"}],
-            max_tokens=5
-        )
-        result["status"] = "OK"
-        result["response"] = r.choices[0].message.content
-    except Exception as e:
-        result["status"] = "ERROR"
-        result["error"] = str(e)
-        result["traceback"] = traceback.format_exc()
-    return result
 
 
 class ExpressionCreate(BaseModel):
