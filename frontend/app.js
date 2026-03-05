@@ -207,7 +207,7 @@ const App = (() => {
 
   // ─── Stats ───
   function updateStats() {
-    document.getElementById('stats-total').textContent = `총 ${expressions.length}개 표현`;
+    document.getElementById('stats-total').textContent = `${expressions.length}개`;
     document.getElementById('footer-count').textContent = `${expressions.length}개 표현 로드됨`;
   }
 

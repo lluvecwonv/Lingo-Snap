@@ -123,51 +123,50 @@ body {
 .btn-danger { background: #D44; color: white; }
 .btn-danger:hover { background: #B33; }
 
-/* === Stats Bar === */
-.stats-bar {
-  max-width: 1100px;
-  margin: 14px auto 0;
-  padding: 0 24px;
-  font-size: 0.83rem;
-  color: var(--text-muted);
-}
-.stats-sep { margin: 0 6px; opacity: 0.4; }
-
-/* === Filter Bar === */
-.filter-bar {
-  max-width: 1100px;
-  margin: 14px auto 18px;
-  padding: 0 24px;
+/* === Stats Badge === */
+.stats-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 3px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
 }
 
-.filter-inner {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+/* === Toolbar (Search + Filters) === */
+.toolbar {
+  max-width: 1100px;
+  margin: 16px auto 20px;
+  padding: 0 24px;
+}
+
+.toolbar-inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
   align-items: center;
 }
 
 .search-wrap {
-  flex: 1;
-  min-width: 200px;
   position: relative;
 }
 
 .search-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.85rem;
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
 .search-wrap input {
   width: 100%;
-  padding: 10px 12px 10px 36px;
+  padding: 11px 14px 11px 40px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-family: inherit;
   background: var(--white);
   transition: all 0.2s;
@@ -179,18 +178,23 @@ body {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-.filter-bar select {
-  padding: 10px 12px;
+.filter-group {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-group select {
+  padding: 11px 12px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: 0.83rem;
+  font-size: 0.84rem;
   font-family: inherit;
   background: var(--white);
   cursor: pointer;
   color: var(--text);
   transition: all 0.2s;
 }
-.filter-bar select:focus {
+.filter-group select:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
@@ -1302,8 +1306,7 @@ mark {
   .header-actions { gap: 6px; }
   .btn { padding: 7px 12px; font-size: 0.82rem; }
   .btn-sm { padding: 4px 10px; font-size: 0.78rem; }
-  .stats-bar { padding: 0 16px; font-size: 0.8rem; }
-  .filter-bar { padding: 0 16px; }
+  .toolbar { padding: 0 16px; }
   .cards-container { padding: 0 16px 40px; }
   .contents-page { padding: 0 16px; margin: 16px auto; }
   .category-tabs { padding: 0 16px; }
@@ -1321,7 +1324,8 @@ mark {
   .language-card { max-width: none; }
   .contents-grid.list-view .content-thumbnail { width: 100px; min-width: 100px; }
   .form-row { grid-template-columns: 1fr; }
-  .filter-inner { flex-direction: column; }
+  .toolbar-inner { grid-template-columns: 1fr; }
+  .filter-group { flex-wrap: wrap; }
   .flashcard-popup { bottom: 12px; right: 12px; left: 12px; }
   .flashcard-inner { width: 100%; }
   .modal { max-width: 100%; margin: 0 10px; }

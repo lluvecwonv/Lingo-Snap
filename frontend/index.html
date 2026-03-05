@@ -19,37 +19,35 @@
       <div class="header-left">
         <a href="/contents" class="back-link">&larr;</a>
         <h1 class="logo" id="content-title-display">...</h1>
+        <span class="stats-badge" id="stats-total">0개</span>
       </div>
       <div class="header-actions">
+        <button id="add-structure-btn" class="btn btn-primary">+ 구문</button>
+        <button id="add-word-btn" class="btn btn-primary">+ 단어</button>
+        <button id="add-btn" class="btn btn-primary">+ 표현</button>
         <button id="review-now-btn" class="btn btn-outline" title="랜덤 복습">복습</button>
-        <button id="add-structure-btn" class="btn btn-accent">+ 구문 추가</button>
-        <button id="add-word-btn" class="btn btn-secondary">+ 단어 추가</button>
-        <button id="add-btn" class="btn btn-primary">+ 표현 추가</button>
         <button id="notif-toggle-btn" class="btn btn-icon" title="알림 설정">🔔</button>
       </div>
     </div>
   </header>
 
-  <!-- Stats Bar -->
-  <section class="stats-bar">
-    <span id="stats-total">총 0개 표현</span>
-  </section>
-
-  <!-- Search & Filter -->
-  <section class="filter-bar">
-    <div class="filter-inner">
+  <!-- Search & Filter Toolbar -->
+  <section class="toolbar">
+    <div class="toolbar-inner">
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="search-input" placeholder="표현 검색..." autocomplete="off">
+        <input type="text" id="search-input" placeholder="표현, 뜻, 태그 검색..." autocomplete="off">
       </div>
-      <select id="filter-season"><option value="">전체 시즌</option></select>
-      <select id="filter-episode"><option value="">전체 에피소드</option></select>
-      <select id="filter-difficulty">
-        <option value="">전체 난이도</option>
-        <option value="beginner">초급</option>
-        <option value="intermediate">중급</option>
-        <option value="advanced">고급</option>
-      </select>
+      <div class="filter-group">
+        <select id="filter-season"><option value="">시즌</option></select>
+        <select id="filter-episode"><option value="">에피소드</option></select>
+        <select id="filter-difficulty">
+          <option value="">난이도</option>
+          <option value="beginner">초급</option>
+          <option value="intermediate">중급</option>
+          <option value="advanced">고급</option>
+        </select>
+      </div>
     </div>
   </section>
 
