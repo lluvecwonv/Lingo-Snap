@@ -1225,7 +1225,7 @@ mark {
   text-align: center;
   padding: 40px 24px;
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
 }
 
 .lang-select-logo {
@@ -1242,14 +1242,14 @@ mark {
 }
 
 .lang-select-grid {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  max-width: 520px;
+  margin: 0 auto;
 }
 
 .lang-select-card {
-  flex: 1;
-  max-width: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;

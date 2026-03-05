@@ -53,11 +53,23 @@
         <div class="language-options">
           <label class="language-label">
             <input type="radio" name="content-language" value="english" checked>
-            <span class="lang-badge">🇺🇸 English</span>
+            <span class="lang-badge">🇺🇸 EN</span>
           </label>
           <label class="language-label">
             <input type="radio" name="content-language" value="japanese">
             <span class="lang-badge">🇯🇵 日本語</span>
+          </label>
+          <label class="language-label">
+            <input type="radio" name="content-language" value="chinese">
+            <span class="lang-badge">🇨🇳 中文</span>
+          </label>
+          <label class="language-label">
+            <input type="radio" name="content-language" value="spanish">
+            <span class="lang-badge">🇪🇸 ES</span>
+          </label>
+          <label class="language-label">
+            <input type="radio" name="content-language" value="french">
+            <span class="lang-badge">🇫🇷 FR</span>
           </label>
         </div>
 
@@ -195,7 +207,8 @@
         document.getElementById('user-display').textContent = currentUser.username;
         // Set lang label from localStorage
         const langLabel = document.getElementById('lang-label');
-        if (langLabel) langLabel.textContent = activeLang === 'japanese' ? '日本語' : 'English';
+        const langNames = { english: 'English', japanese: '日本語', chinese: '中文', spanish: 'Español', french: 'Français' };
+        if (langLabel) langLabel.textContent = langNames[activeLang] || 'English';
         // Sync modal language default
         const langRadio = document.querySelector(`input[name="content-language"][value="${activeLang}"]`);
         if (langRadio) langRadio.checked = true;
