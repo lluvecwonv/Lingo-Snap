@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingo Snap - 콘텐츠</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <meta property="og:title" content="Lingo Snap">
+  <meta property="og:description" content="넷플릭스 & 유튜브 영어 표현 학습">
+  <meta property="og:image" content="/static/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <h1 class="logo">Lingo Snap <span class="logo-sub">내 콘텐츠</span></h1>
+      <div class="header-actions">
+        <span id="user-display" class="user-display"></span>
+        <button id="add-content-btn" class="btn btn-primary">+ 새 콘텐츠</button>
+        <button id="settings-btn" class="btn btn-icon" title="알림 설정">🔔</button>
+        <button id="logout-btn" class="btn btn-outline">로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Category Tabs -->
+  <nav class="category-tabs" id="category-tabs"></nav>
+
+  <main class="contents-page">
+    <div id="contents-grid" class="contents-grid"></div>
+    <p id="no-contents" class="no-results hidden">아직 콘텐츠가 없습니다. 새 콘텐츠를 추가해보세요!</p>
+  </main>
+
+  <!-- Add Content Modal -->
+  <div id="content-modal" class="modal-overlay hidden">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>새 콘텐츠 추가</h2>
+        <button class="modal-close" onclick="document.getElementById('content-modal').classList.add('hidden')">&times;</button>
+      </div>
+      <form id="content-form" class="modal-body">
+        <label>카테고리</label>
+        <div class="platform-options">
+          <label class="platform-label">
+            <input type="radio" name="platform" value="netflix" checked>
+            <span class="platform-badge netflix">Netflix</span>
+          </label>
+          <label class="platform-label">
+            <input type="radio" name="platform" value="youtube">
+            <span class="platform-badge youtube">YouTube</span>
+          </label>
+          <label class="platform-label">
+            <input type="radio" name="platform" value="book">
+            <span class="platform-badge book">원서</span>
+          </label>
+          <label class="platform-label">
+            <input type="radio" name="platform" value="paper">
+            <span class="platform-badge paper">논문</span>
+          </label>
+          <label class="platform-label">
+            <input type="radio" name="platform" value="dictionary">
+            <span class="platform-badge dictionary">단어사전</span>
+          </label>
+          <label class="platform-label">
+            <input type="radio" name="platform" value="other">
+            <span class="platform-badge other">기타</span>
+          </label>
+        </div>
+
+        <label>제목 <span class="required">*</span></label>
+        <input type="text" id="content-title" required placeholder="e.g. 에밀리 파리에 가다">
+        <p id="title-hint" class="form-hint"></p>
+
+        <label>링크 (선택)</label>
+        <input type="text" id="content-url" placeholder="https://...">
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="document.getElementById('content-modal').classList.add('hidden')">취소</button>
+          <button type="submit" class="btn btn-primary">추가하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>알림 설정</h2>
+        <button class="modal-close" onclick="document.getElementById('settings-modal').classList.add('hidden')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-row">
+          <span>배너 알림</span>
+          <label class="switch">
+            <input type="checkbox" id="notif-enabled-check" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>알림 소리</span>
+          <label class="switch">
+            <input type="checkbox" id="notif-sound-check" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>알림 간격</span>
+          <select id="notif-interval-select">
+            <option value="10000">10초 (테스트)</option>
+            <option value="60000">60초 (테스트)</option>
+            <option value="300000" selected>5분</option>
+            <option value="600000">10분</option>
+            <option value="900000">15분</option>
+            <option value="1800000">30분</option>
+            <option value="3600000">1시간</option>
+          </select>
+        </div>
+        <p class="form-hint" style="margin-top:8px">모든 콘텐츠에서 랜덤 표현이 팝업됩니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flashcard Popup -->
+  <div id="flashcard-popup" class="flashcard-popup">
+    <div class="flashcard-inner">
+      <div class="flashcard-header">
+        <span>복습 시간!</span>
+        <button class="flashcard-close" onclick="Notifications.closeFlashcard()">&times;</button>
+      </div>
+      <p id="flash-expression" class="flash-expression"></p>
+      <button id="flash-reveal-btn" class="btn btn-primary btn-sm" onclick="Notifications.revealAnswer()">뜻 보기</button>
+      <div id="flash-answer" class="flash-answer hidden"></div>
+      <p id="flash-source" class="flash-source"></p>
+    </div>
+  </div>
+
+  <script src="/static/api.js"></script>
+  <script src="/static/tts.js"></script>
+  <script src="/static/notifications.js"></script>
+  <script>
+    let currentUser = null;
+    let allContents = [];
+    let activeTab = 'all';
+
+    const platformLabels = {
+      netflix: 'Netflix', youtube: 'YouTube', book: '원서',
+      paper: '논문', dictionary: '단어사전', other: '기타'
+    };
+
+    async function init() {
+      try {
+        currentUser = await API.get('/me');
+        if (!currentUser) return;
+        document.getElementById('user-display').textContent = currentUser.username;
+        await loadContents();
+      } catch {
+        window.location.href = '/login';
+      }
+    }
+
+    async function loadContents() {
+      allContents = await API.get('/contents') || [];
+      renderTabs();
+      renderGrid();
+    }
+
+    function renderTabs() {
+      const tabsEl = document.getElementById('category-tabs');
+      // Count per platform
+      const counts = {};
+      allContents.forEach(c => {
+        counts[c.platform] = (counts[c.platform] || 0) + 1;
+      });
+
+      // Build tabs: "전체" + each platform that has contents
+      const platformOrder = ['netflix', 'youtube', 'book', 'paper', 'dictionary', 'other'];
+      let html = `<button class="category-tab ${activeTab === 'all' ? 'active' : ''}" data-tab="all">전체<span class="tab-count">${allContents.length}</span></button>`;
+
+      platformOrder.forEach(p => {
+        if (counts[p]) {
+          html += `<button class="category-tab ${activeTab === p ? 'active' : ''}" data-tab="${p}">${platformLabels[p]}<span class="tab-count">${counts[p]}</span></button>`;
+        }
+      });
+
+      tabsEl.innerHTML = html;
+
+      // Bind tab clicks
+      tabsEl.querySelectorAll('.category-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeTab = btn.dataset.tab;
+          tabsEl.querySelectorAll('.category-tab').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderGrid();
+        });
+      });
+    }
+
+    function renderGrid() {
+      const filtered = activeTab === 'all'
+        ? allContents
+        : allContents.filter(c => c.platform === activeTab);
+
+      const grid = document.getElementById('contents-grid');
+      const noMsg = document.getElementById('no-contents');
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        noMsg.classList.remove('hidden');
+        noMsg.textContent = activeTab === 'all'
+          ? '아직 콘텐츠가 없습니다. 새 콘텐츠를 추가해보세요!'
+          : `${platformLabels[activeTab] || activeTab} 콘텐츠가 없습니다.`;
+        return;
+      }
+
+      noMsg.classList.add('hidden');
+      grid.innerHTML = filtered.map(c => `
+        <div class="content-card" onclick="window.location.href='/expressions?content_id=${c.id}'">
+          <div class="content-card-top">
+            <span class="platform-badge ${c.platform}">${platformLabels[c.platform] || c.platform}</span>
+            <button class="card-action-btn delete" onclick="event.stopPropagation(); deleteContent(${c.id}, '${c.title.replace(/'/g, "\\'")}')" title="삭제">&#x2715;</button>
+          </div>
+          <h3 class="content-title">${escapeHtml(c.title)}</h3>
+          <p class="content-count">${c.expression_count}개 표현</p>
+        </div>
+      `).join('');
+    }
+
+    async function deleteContent(id, title) {
+      if (!confirm(`"${title}" 콘텐츠를 삭제하시겠습니까?\n포함된 모든 표현도 함께 삭제됩니다.`)) return;
+      await API.del('/contents/' + id);
+      await loadContents();
+    }
+
+    document.getElementById('add-content-btn').addEventListener('click', () => {
+      document.getElementById('content-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('content-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('content-title').value.trim();
+      const platform = document.querySelector('input[name="platform"]:checked').value;
+      const url = document.getElementById('content-url').value.trim();
+
+      await API.post('/contents', { title, platform, url });
+      document.getElementById('content-modal').classList.add('hidden');
+      document.getElementById('content-form').reset();
+      await loadContents();
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await API.post('/logout', {});
+      window.location.href = '/login';
+    });
+
+    // Settings & Notifications
+    document.getElementById('settings-btn').addEventListener('click', () => {
+      document.getElementById('settings-modal').classList.remove('hidden');
+    });
+    document.getElementById('notif-enabled-check').addEventListener('change', (e) => {
+      Notifications.toggle(e.target.checked);
+    });
+    document.getElementById('notif-interval-select').addEventListener('change', (e) => {
+      Notifications.setInterval(parseInt(e.target.value));
+    });
+    document.getElementById('notif-sound-check').addEventListener('change', (e) => {
+      Notifications.toggleSound(e.target.checked);
+    });
+    document.getElementById('settings-modal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden');
+    });
+
+    // Init notifications on contents page too
+    Notifications.init();
+    Notifications.requestPermission();
+
+    // Sync settings UI with stored values
+    const storedEnabled = localStorage.getItem('notif_enabled');
+    if (storedEnabled === 'false') document.getElementById('notif-enabled-check').checked = false;
+    const storedSound = localStorage.getItem('notif_sound');
+    if (storedSound === 'false') document.getElementById('notif-sound-check').checked = false;
+    const storedInterval = localStorage.getItem('notif_interval');
+    if (storedInterval) {
+      const sel = document.getElementById('notif-interval-select');
+      if (sel.querySelector(`option[value="${storedInterval}"]`)) sel.value = storedInterval;
+    }
+
+    // Platform selection → update hint and placeholder
+    const hints = {
+      netflix: { ph: 'e.g. 에밀리 파리에 가다', hint: '' },
+      youtube: { ph: 'e.g. English with Lucy', hint: '' },
+      book: { ph: 'e.g. The Great Gatsby', hint: '원서 제목을 입력하세요' },
+      paper: { ph: 'e.g. Causal Estimation of Memorisation Profiles', hint: '논문 제목을 입력하세요' },
+      dictionary: { ph: 'e.g. 일상 단어장', hint: '단어장 이름을 자유롭게 지어주세요' },
+      other: { ph: 'e.g. 팟캐스트, 강의 등', hint: '카테고리 : 제목 형태로 입력하세요' },
+    };
+    document.querySelectorAll('input[name="platform"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        const h = hints[radio.value] || hints.other;
+        document.getElementById('content-title').placeholder = h.ph;
+        document.getElementById('title-hint').textContent = h.hint;
+      });
+    });
+
+    // Close modal on overlay click
+    document.getElementById('content-modal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden');
+    });
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    init();
+  </script>
+</body>
+</html>

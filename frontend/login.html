@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingo Snap - Login</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <meta property="og:title" content="Lingo Snap">
+  <meta property="og:description" content="넷플릭스 & 유튜브 영어 표현 학습">
+  <meta property="og:image" content="/static/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="auth-body">
+  <div class="auth-container">
+    <h1 class="auth-logo">Lingo Snap</h1>
+    <p class="auth-subtitle">넷플릭스 & 유튜브 영어 표현 학습</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">로그인</button>
+      <button class="auth-tab" onclick="switchTab('register')">회원가입</button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+      <label>아이디</label>
+      <input type="text" id="login-username" required placeholder="아이디 입력" autocomplete="username">
+      <label>비밀번호</label>
+      <input type="password" id="login-password" required placeholder="비밀번호 입력" autocomplete="current-password">
+      <p id="login-error" class="auth-error"></p>
+      <button type="submit" class="btn btn-primary auth-submit">로그인</button>
+    </form>
+
+    <!-- Register Form -->
+    <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+      <label>아이디</label>
+      <input type="text" id="reg-username" required placeholder="아이디 (2자 이상)" autocomplete="username">
+      <label>비밀번호</label>
+      <input type="password" id="reg-password" required placeholder="비밀번호 (4자 이상)" autocomplete="new-password">
+      <label>비밀번호 확인</label>
+      <input type="password" id="reg-password2" required placeholder="비밀번호 다시 입력" autocomplete="new-password">
+      <p id="reg-error" class="auth-error"></p>
+      <button type="submit" class="btn btn-primary auth-submit">회원가입</button>
+    </form>
+  </div>
+
+  <script>
+    // Check if already logged in
+    fetch('/api/me', { credentials: 'include' })
+      .then(r => { if (r.ok) window.location.href = '/contents'; });
+
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('login-error');
+      errEl.textContent = '';
+      try {
+        const r = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            username: document.getElementById('login-username').value,
+            password: document.getElementById('login-password').value,
+          }),
+        });
+        if (!r.ok) {
+          const data = await r.json();
+          errEl.textContent = data.detail || '로그인 실패';
+          return;
+        }
+        window.location.href = '/contents';
+      } catch (err) {
+        errEl.textContent = '서버 연결 실패';
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('reg-error');
+      errEl.textContent = '';
+      const pw = document.getElementById('reg-password').value;
+      const pw2 = document.getElementById('reg-password2').value;
+      if (pw !== pw2) { errEl.textContent = '비밀번호가 일치하지 않습니다'; return; }
+
+      try {
+        const r = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            username: document.getElementById('reg-username').value,
+            password: pw,
+          }),
+        });
+        if (!r.ok) {
+          const data = await r.json();
+          errEl.textContent = data.detail || '회원가입 실패';
+          return;
+        }
+        window.location.href = '/contents';
+      } catch (err) {
+        errEl.textContent = '서버 연결 실패';
+      }
+    }
+  </script>
+</body>
+</html>

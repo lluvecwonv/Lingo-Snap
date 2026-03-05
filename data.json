@@ -1,0 +1,50 @@
+{
+  "expressions": [
+    {
+      "id": "1709628000001",
+      "expression": "I'm done waiting",
+      "korean_meaning": "더 이상 기다리지 않겠어",
+      "korean_explanation": "인내심이 바닥났을 때 쓰는 표현. 'I'm done + ~ing' 패턴으로 '~하는 거 이제 끝이야'라는 뜻.",
+      "usage_examples": [
+        { "english": "I'm done waiting for your apology.", "korean": "네 사과를 기다리는 것에 질렸어." },
+        { "english": "I'm done waiting for the right moment.", "korean": "적절한 순간을 기다리는 건 이제 그만둘 거야." },
+        { "english": "I'm done trying to impress him.", "korean": "그에게 잘 보이려고 노력하는 건 이제 그만이야." }
+      ],
+      "source": { "show": "Emily in Paris", "season": 1, "episode": 3, "scene_note": "Emily가 더 이상 참지 않겠다며 말하는 장면" },
+      "tags": ["감정표현", "결단", "I'm done 패턴"],
+      "difficulty": "beginner",
+      "date_added": "2026-03-05",
+      "review_count": 0
+    },
+    {
+      "id": "1709628000002",
+      "expression": "That's on you",
+      "korean_meaning": "그건 네 책임이야 / 네 탓이야",
+      "korean_explanation": "상대방의 선택이나 실수에 대해 '그건 네 문제야'라고 말할 때 쓰는 표현.",
+      "usage_examples": [
+        { "english": "If you don't study, that's on you.", "korean": "공부 안 하면 그건 네 탓이야." },
+        { "english": "I warned you. That's on you now.", "korean": "내가 경고했잖아. 이제 네 책임이야." }
+      ],
+      "source": { "show": "Emily in Paris", "season": 1, "episode": 5, "scene_note": "동료가 Emily에게 책임을 돌리는 장면" },
+      "tags": ["책임", "일상회화"],
+      "difficulty": "beginner",
+      "date_added": "2026-03-05",
+      "review_count": 0
+    },
+    {
+      "id": "1709628000003",
+      "expression": "It's a whole thing",
+      "korean_meaning": "그게 좀 복잡해 / 얘기가 길어",
+      "korean_explanation": "상황이 복잡하거나 설명하기 귀찮을 때 쓰는 캐주얼한 표현.",
+      "usage_examples": [
+        { "english": "Why did you break up? — It's a whole thing.", "korean": "왜 헤어졌어? — 얘기가 길어." },
+        { "english": "Don't ask about work. It's a whole thing.", "korean": "일 얘기 묻지 마. 좀 복잡해." }
+      ],
+      "source": { "show": "Emily in Paris", "season": 2, "episode": 1, "scene_note": "Emily가 복잡한 상황을 간단히 넘기려 할 때" },
+      "tags": ["캐주얼", "회피", "일상회화"],
+      "difficulty": "intermediate",
+      "date_added": "2026-03-05",
+      "review_count": 0
+    }
+  ]
+}

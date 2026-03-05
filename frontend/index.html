@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingo Snap - 표현</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <meta property="og:title" content="Lingo Snap">
+  <meta property="og:description" content="넷플릭스 & 유튜브 영어 표현 학습">
+  <meta property="og:image" content="/static/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <a href="/contents" class="back-link">&larr;</a>
+        <h1 class="logo" id="content-title-display">...</h1>
+      </div>
+      <div class="header-actions">
+        <button id="review-now-btn" class="btn btn-outline" title="랜덤 복습">복습</button>
+        <button id="add-structure-btn" class="btn btn-accent">+ 구문 추가</button>
+        <button id="add-word-btn" class="btn btn-secondary">+ 단어 추가</button>
+        <button id="add-btn" class="btn btn-primary">+ 표현 추가</button>
+        <button id="notif-toggle-btn" class="btn btn-icon" title="알림 설정">🔔</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats Bar -->
+  <section class="stats-bar">
+    <span id="stats-total">총 0개 표현</span>
+  </section>
+
+  <!-- Search & Filter -->
+  <section class="filter-bar">
+    <div class="filter-inner">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="표현 검색..." autocomplete="off">
+      </div>
+      <select id="filter-season"><option value="">전체 시즌</option></select>
+      <select id="filter-episode"><option value="">전체 에피소드</option></select>
+      <select id="filter-difficulty">
+        <option value="">전체 난이도</option>
+        <option value="beginner">초급</option>
+        <option value="intermediate">중급</option>
+        <option value="advanced">고급</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Expression Cards Grid -->
+  <main class="cards-container">
+    <div id="cards-grid" class="cards-grid"></div>
+    <p id="no-results" class="no-results hidden">검색 결과가 없습니다.</p>
+    <p id="loading" class="no-results">불러오는 중...</p>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <button id="export-btn" class="btn btn-outline btn-sm">JSON 내보내기</button>
+    <span id="footer-count"></span>
+  </footer>
+
+  <!-- Add/Edit Expression Modal -->
+  <div id="add-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">새 표현 추가</h2>
+        <button class="modal-close" onclick="App.closeModal()">&times;</button>
+      </div>
+      <form id="expression-form" class="modal-body">
+        <label>영어 표현 <span class="required">*</span></label>
+        <div class="input-with-btn">
+          <input type="text" id="form-expression" required placeholder="e.g. I'm done waiting">
+          <button type="button" id="gpt-generate-btn" class="btn btn-primary btn-sm" onclick="App.generateWithGPT()">GPT 자동 생성</button>
+        </div>
+        <div id="gpt-loading" class="gpt-loading hidden">GPT 생성 중...</div>
+
+        <label>한국어 뜻 <span class="required">*</span></label>
+        <input type="text" id="form-meaning" required placeholder="GPT가 자동으로 채워줍니다">
+
+        <label>요약 설명 (카드에 표시)</label>
+        <textarea id="form-explanation" rows="3" placeholder="5줄 이내 핵심 요약"></textarea>
+
+        <label>자세한 설명 (펼치면 보임)</label>
+        <textarea id="form-detail" rows="8" placeholder="상황별 예문, 구조 분석 등..."></textarea>
+
+        <label>응용 표현</label>
+        <div id="usage-examples-list"></div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="App.addUsageRow()">+ 응용 표현 추가</button>
+
+        <div id="form-season-row" class="form-row" style="grid-template-columns: 1fr 1fr;">
+          <div>
+            <label>시즌</label>
+            <input type="number" id="form-season" min="1" max="30" value="1">
+          </div>
+          <div>
+            <label>에피소드</label>
+            <input type="number" id="form-episode" min="1" max="99" value="1">
+          </div>
+        </div>
+
+        <label>난이도</label>
+        <select id="form-difficulty">
+          <option value="beginner">초급</option>
+          <option value="intermediate">중급</option>
+          <option value="advanced">고급</option>
+        </select>
+
+        <div id="form-scene-wrap">
+          <label>장면 메모</label>
+          <input type="text" id="form-scene" placeholder="어떤 장면에서 나왔는지...">
+        </div>
+
+        <label>태그 (쉼표로 구분)</label>
+        <input type="text" id="form-tags" placeholder="e.g. 감정표현, 결단, 일상회화">
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="App.closeModal()">취소</button>
+          <button type="submit" class="btn btn-primary">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Quick Word Add Modal -->
+  <div id="word-modal" class="modal-overlay hidden">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>단어 추가</h2>
+        <button class="modal-close" onclick="App.closeWordModal()">&times;</button>
+      </div>
+      <form id="word-form" class="modal-body">
+        <label>영어 단어/표현 <span class="required">*</span></label>
+        <div class="input-with-btn">
+          <input type="text" id="word-expression" required placeholder="e.g. resilient">
+          <button type="button" class="btn btn-primary btn-sm" onclick="App.generateWord()">GPT 자동 생성</button>
+        </div>
+        <div id="word-gpt-loading" class="gpt-loading hidden">GPT 생성 중...</div>
+
+        <label>뜻 <span class="required">*</span></label>
+        <input type="text" id="word-meaning" required placeholder="GPT가 자동으로 채워줍니다">
+
+        <label>설명</label>
+        <textarea id="word-explanation" rows="3" placeholder="간단한 설명..."></textarea>
+
+        <label>응용 표현</label>
+        <div id="word-usage-list"></div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="App.addWordUsageRow()">+ 응용 표현 추가</button>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="App.closeWordModal()">취소</button>
+          <button type="submit" class="btn btn-primary">저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Structure (구문) Add Modal -->
+  <div id="structure-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>구문 추가</h2>
+        <button class="modal-close" onclick="App.closeStructureModal()">&times;</button>
+      </div>
+      <form id="structure-form" class="modal-body">
+        <label>영어 문장 입력 <span class="required">*</span></label>
+        <textarea id="structure-sentence" rows="3" required placeholder="e.g. one may expect each individual instance to have little impact on the final model."></textarea>
+        <button type="button" id="structure-generate-btn" class="btn btn-primary btn-sm" onclick="App.generateStructure()" style="margin-top:6px">구문 패턴 추출</button>
+        <div id="structure-gpt-loading" class="gpt-loading hidden">GPT 분석 중...</div>
+
+        <label>추출된 구문 패턴 <span class="required">*</span></label>
+        <input type="text" id="structure-expression" required placeholder="GPT가 자동으로 추출합니다">
+
+        <label>한국어 뜻 <span class="required">*</span></label>
+        <input type="text" id="structure-meaning" required placeholder="GPT가 자동으로 채워줍니다">
+
+        <label>요약 설명 (카드에 표시)</label>
+        <textarea id="structure-explanation" rows="3" placeholder="5줄 이내 핵심 요약"></textarea>
+
+        <label>자세한 설명 (펼치면 보임)</label>
+        <textarea id="structure-detail" rows="8" placeholder="구조 분석, 예문 등..."></textarea>
+
+        <label>응용 표현</label>
+        <div id="structure-usage-list"></div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="App.addStructureUsageRow()">+ 응용 표현 추가</button>
+
+        <label>난이도</label>
+        <select id="structure-difficulty">
+          <option value="beginner">초급</option>
+          <option value="intermediate" selected>중급</option>
+          <option value="advanced">고급</option>
+        </select>
+
+        <label>태그 (쉼표로 구분)</label>
+        <input type="text" id="structure-tags" placeholder="e.g. 구문, 논문패턴, expect">
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="App.closeStructureModal()">취소</button>
+          <button type="submit" class="btn btn-primary">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notification Settings Modal -->
+  <div id="notif-modal" class="modal-overlay hidden">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>알림 설정</h2>
+        <button class="modal-close" onclick="document.getElementById('notif-modal').classList.add('hidden')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-row">
+          <span>팝업 알림</span>
+          <label class="switch">
+            <input type="checkbox" id="notif-enabled-check" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>알림 소리</span>
+          <label class="switch">
+            <input type="checkbox" id="notif-sound-check" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>알림 간격</span>
+          <select id="notif-interval-select">
+            <option value="10000">10초 (테스트)</option>
+            <option value="60000">60초 (테스트)</option>
+            <option value="300000" selected>5분</option>
+            <option value="600000">10분</option>
+            <option value="900000">15분</option>
+            <option value="1800000">30분</option>
+            <option value="3600000">1시간</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flashcard Popup -->
+  <div id="flashcard-popup" class="flashcard-popup">
+    <div class="flashcard-inner">
+      <div class="flashcard-header">
+        <span>복습 시간! 📚</span>
+        <button class="flashcard-close" onclick="Notifications.closeFlashcard()">&times;</button>
+      </div>
+      <p id="flash-expression" class="flash-expression"></p>
+      <button class="btn btn-icon flash-speak" onclick="TTS.speak(document.getElementById('flash-expression').textContent.replace(/\"/g,''))">🔊</button>
+      <button id="flash-reveal-btn" class="btn btn-primary btn-sm" onclick="Notifications.revealAnswer()">뜻 보기 👀</button>
+      <div id="flash-answer" class="flash-answer hidden"></div>
+      <p id="flash-source" class="flash-source"></p>
+    </div>
+  </div>
+
+  <script src="/static/api.js"></script>
+  <script src="/static/tts.js"></script>
+  <script src="/static/notifications.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
