@@ -177,22 +177,22 @@ def global_random_expression(
 
 
 @router.post("/generate")
-async def generate(req: GenerateRequest, user: User = Depends(get_current_user)):
+def generate(req: GenerateRequest, user: User = Depends(get_current_user)):
     if not req.expression.strip():
         raise HTTPException(400, "영어 표현을 입력해주세요")
     try:
-        result = await generate_expression_data(req.expression.strip(), req.platform)
+        result = generate_expression_data(req.expression.strip(), req.platform)
         return result
     except Exception as e:
         raise HTTPException(502, f"GPT 생성 오류: {str(e)}")
 
 
 @router.post("/generate-structure")
-async def generate_structure(req: GenerateRequest, user: User = Depends(get_current_user)):
+def generate_structure(req: GenerateRequest, user: User = Depends(get_current_user)):
     if not req.expression.strip():
         raise HTTPException(400, "영어 문장을 입력해주세요")
     try:
-        result = await generate_structure_data(req.expression.strip(), req.platform)
+        result = generate_structure_data(req.expression.strip(), req.platform)
         return result
     except Exception as e:
         raise HTTPException(502, f"GPT 생성 오류: {str(e)}")

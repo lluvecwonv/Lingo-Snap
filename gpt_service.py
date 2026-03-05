@@ -1,7 +1,6 @@
 import os
 import json
-import httpx
-from openai import AsyncOpenAI
+from openai import OpenAI
 
 DEFAULT_PROMPT = r"""너는 미국에서 10년 살다 온 친한 언니/오빠 같은 영어 튜터야.
 격식 없이 반말로, 정확한 뉘앙스를 짚어줘. 이모티콘 절대 금지.
@@ -149,9 +148,8 @@ PLATFORM_PROMPTS = {
 }
 
 
-async def generate_structure_data(sentence: str, platform: str = "") -> dict:
+def generate_structure_data(sentence: str, platform: str = "") -> dict:
     """Extract sentence structure pattern and generate explanation."""
-    # Use structure prompt, but also incorporate platform context
     base = STRUCTURE_PROMPT
     if platform == "paper":
         base = base.replace(
@@ -162,8 +160,8 @@ async def generate_structure_data(sentence: str, platform: str = "") -> dict:
             "논문체 예문 -> [비슷한 패턴]으로 유사 구문. 논문 작성에 바로 쓸 수 있게"
         )
 
-    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=httpx.Timeout(30.0))
-    response = await client.chat.completions.create(
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": base},
@@ -176,10 +174,10 @@ async def generate_structure_data(sentence: str, platform: str = "") -> dict:
     return json.loads(response.choices[0].message.content)
 
 
-async def generate_expression_data(expression: str, platform: str = "") -> dict:
+def generate_expression_data(expression: str, platform: str = "") -> dict:
     prompt = PLATFORM_PROMPTS.get(platform, DEFAULT_PROMPT)
-    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=httpx.Timeout(30.0))
-    response = await client.chat.completions.create(
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": prompt},
