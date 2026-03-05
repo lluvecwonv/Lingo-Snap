@@ -1,5 +1,6 @@
 import os
 import json
+import httpx
 from openai import AsyncOpenAI
 
 DEFAULT_PROMPT = r"""너는 미국에서 10년 살다 온 친한 언니/오빠 같은 영어 튜터야.
@@ -161,7 +162,7 @@ async def generate_structure_data(sentence: str, platform: str = "") -> dict:
             "논문체 예문 -> [비슷한 패턴]으로 유사 구문. 논문 작성에 바로 쓸 수 있게"
         )
 
-    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=httpx.Timeout(30.0))
     response = await client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -177,7 +178,7 @@ async def generate_structure_data(sentence: str, platform: str = "") -> dict:
 
 async def generate_expression_data(expression: str, platform: str = "") -> dict:
     prompt = PLATFORM_PROMPTS.get(platform, DEFAULT_PROMPT)
-    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=httpx.Timeout(30.0))
     response = await client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
