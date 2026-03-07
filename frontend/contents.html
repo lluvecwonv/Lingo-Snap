@@ -15,7 +15,7 @@
   <header class="header">
     <div class="header-inner">
       <div class="header-left">
-        <a href="/language" class="back-link" title="언어 선택">←</a>
+        <a href="/language" class="back-link" title="언어 선택" aria-label="언어 선택으로 돌아가기">Back</a>
         <h1 class="logo">Lingo Snap <span class="logo-sub" id="lang-label">English</span></h1>
       </div>
       <div class="header-actions">
@@ -31,8 +31,8 @@
   <div class="contents-toolbar">
     <nav class="category-tabs" id="category-tabs" style="margin:0;padding:0;flex:1"></nav>
     <div class="view-toggle">
-      <button class="view-toggle-btn active" data-view="grid" title="그리드 보기">▦</button>
-      <button class="view-toggle-btn" data-view="list" title="리스트 보기">☰</button>
+      <button class="view-toggle-btn active" data-view="grid" title="그리드 보기">Grid</button>
+      <button class="view-toggle-btn" data-view="list" title="리스트 보기">List</button>
     </div>
   </div>
 
@@ -333,11 +333,24 @@
       if (filtered.length === 0) {
         grid.innerHTML = '';
         noMsg.classList.remove('hidden');
-        const langName = activeLang === 'japanese' ? '日本語' : 'English';
+        const langNames = {
+          english: 'English',
+          japanese: '日本語',
+          chinese: '中文',
+          spanish: 'Español',
+          french: 'Français',
+        };
+        const langName = langNames[activeLang] || 'English';
         noMsg.textContent = activeTab === 'all'
           ? `${langName} 콘텐츠가 없습니다. 새 콘텐츠를 추가해보세요!`
           : `${platformLabels[activeTab] || activeTab} 콘텐츠가 없습니다.`;
         return;
+      }
+
+      function getContentHref(content) {
+        const seasonalPlatforms = ['netflix', 'youtube'];
+        const base = seasonalPlatforms.includes(content.platform) ? '/seasons' : '/expressions';
+        return `${base}?content_id=${content.id}`;
       }
 
       noMsg.classList.add('hidden');
@@ -348,7 +361,7 @@
         const bgStyle = c.thumbnail_url ? '' : `background:${pastelColor(c.id)}`;
 
         return `
-        <div class="content-card" onclick="window.location.href='/expressions?content_id=${c.id}'">
+        <div class="content-card" onclick="window.location.href='${getContentHref(c)}'">
           <div class="content-thumbnail" style="${bgStyle}">
             ${thumbHtml}
           </div>

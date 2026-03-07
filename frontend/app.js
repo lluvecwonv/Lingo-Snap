@@ -5,6 +5,7 @@ const App = (() => {
   let contentTitle = '';
   let contentPlatform = '';  // netflix, youtube, book, paper, dictionary, other
   let contentLanguage = 'english';  // english / japanese
+  let selectedSeason = null;
   let expressions = [];
   let editingId = null;
   let exprViewMode = localStorage.getItem('expr_view_mode') || 'card';
@@ -20,10 +21,12 @@ const App = (() => {
   async function init() {
     const params = new URLSearchParams(window.location.search);
     contentId = params.get('content_id');
+    selectedSeason = parseInt(params.get('season') || '', 10) || null;
     if (!contentId) { window.location.href = '/contents'; return; }
 
     TTS.init();
-    await loadContentInfo();
+    const ready = await loadContentInfo();
+    if (ready === false) return;
     await loadExpressions();
     bindEvents();
     Notifications.init();
@@ -39,25 +42,52 @@ const App = (() => {
         contentTitle = c.title;
         contentPlatform = c.platform || '';
         contentLanguage = c.language || 'english';
+        if (hasSeason() && !selectedSeason) {
+          window.location.href = `/seasons?content_id=${contentId}`;
+          return false;
+        }
         document.getElementById('content-title-display').textContent = c.title;
+        const seasonBadge = document.getElementById('season-context-badge');
+        if (seasonBadge) {
+          if (hasSeason() && selectedSeason) {
+            seasonBadge.textContent = `Season ${selectedSeason}`;
+            seasonBadge.classList.remove('hidden');
+          } else {
+            seasonBadge.classList.add('hidden');
+          }
+        }
+        const backLink = document.getElementById('back-link');
+        if (backLink && hasSeason()) backLink.href = `/seasons?content_id=${contentId}`;
         document.title = `${c.title} - Lingo Snap`;
       }
     } catch {}
 
     // Show/hide season-related UI based on platform
     applyPlatformUI();
+    return true;
   }
 
   function applyPlatformUI() {
     const showSeason = hasSeason();
+    const seasonLocked = showSeason && selectedSeason;
 
     // Filter dropdowns
-    document.getElementById('filter-season').style.display = showSeason ? '' : 'none';
+    document.getElementById('filter-season').style.display = showSeason && !seasonLocked ? '' : 'none';
     document.getElementById('filter-episode').style.display = showSeason ? '' : 'none';
 
     // Form fields (season/episode row)
     const seasonRow = document.getElementById('form-season-row');
-    if (seasonRow) seasonRow.style.display = showSeason ? '' : 'none';
+    if (seasonRow) seasonRow.style.display = showSeason && !seasonLocked ? '' : 'none';
+
+    const seasonHint = document.getElementById('selected-season-note');
+    if (seasonHint) {
+      if (seasonLocked) {
+        seasonHint.textContent = `현재 Season ${selectedSeason}에 저장됩니다.`;
+        seasonHint.classList.remove('hidden');
+      } else {
+        seasonHint.classList.add('hidden');
+      }
+    }
 
     // Scene note (only for video content)
     const sceneLabel = document.getElementById('form-scene-wrap');
@@ -73,6 +103,7 @@ const App = (() => {
 
     let query = `/contents/${contentId}/expressions?`;
     if (search) query += `search=${encodeURIComponent(search)}&`;
+    if (selectedSeason && hasSeason()) query += `season=${selectedSeason}&`;
     if (season && hasSeason()) query += `season=${season}&`;
     if (episode && hasSeason()) query += `episode=${episode}&`;
     if (difficulty) query += `difficulty=${difficulty}&`;
@@ -100,16 +131,16 @@ const App = (() => {
 
     const seasonSel = document.getElementById('filter-season');
     const curSeason = seasonSel.value;
-    seasonSel.innerHTML = '<option value="">전체 시즌</option>';
+    seasonSel.innerHTML = '<option value="">All seasons</option>';
     seasons.forEach(s => {
-      seasonSel.innerHTML += `<option value="${s}" ${s == curSeason ? 'selected' : ''}>시즌 ${s}</option>`;
+      seasonSel.innerHTML += `<option value="${s}" ${s == curSeason ? 'selected' : ''}>Season ${s}</option>`;
     });
 
     const epSel = document.getElementById('filter-episode');
     const curEp = epSel.value;
-    epSel.innerHTML = '<option value="">전체 에피소드</option>';
+    epSel.innerHTML = '<option value="">All episodes</option>';
     episodes.forEach(e => {
-      epSel.innerHTML += `<option value="${e}" ${e == curEp ? 'selected' : ''}>에피소드 ${e}</option>`;
+      epSel.innerHTML += `<option value="${e}" ${e == curEp ? 'selected' : ''}>Episode ${e}</option>`;
     });
   }
 
@@ -139,12 +170,17 @@ const App = (() => {
     if (hasSeason()) {
       const groups = {};
       expressions.forEach(expr => {
-        const key = `${expr.season}-${expr.episode}`;
-        if (!groups[key]) groups[key] = { season: expr.season, episode: expr.episode, items: [] };
+        const key = selectedSeason ? `${expr.episode}` : `${expr.season}-${expr.episode}`;
+        if (!groups[key]) {
+          groups[key] = selectedSeason
+            ? { episode: expr.episode, items: [] }
+            : { season: expr.season, episode: expr.episode, items: [] };
+        }
         groups[key].items.push(expr);
       });
 
       const sortedKeys = Object.keys(groups).sort((a, b) => {
+        if (selectedSeason) return Number(a) - Number(b);
         const [sa, ea] = a.split('-').map(Number);
         const [sb, eb] = b.split('-').map(Number);
         return sa - sb || ea - eb;
@@ -152,7 +188,9 @@ const App = (() => {
 
       grid.innerHTML = sortedKeys.map(key => {
         const group = groups[key];
-        const header = `<div class="group-header">시즌 ${group.season} - ${group.episode}화</div>`;
+        const header = selectedSeason
+          ? `<div class="group-header">Episode ${group.episode}</div>`
+          : `<div class="group-header">Season ${group.season} - Episode ${group.episode}</div>`;
         const cards = group.items.map(expr => renderSingleCard(expr, query)).join('');
         return header + cards;
       }).join('');
@@ -205,6 +243,9 @@ const App = (() => {
           const detail = document.createElement('div');
           detail.className = 'list-detail';
           let html = '';
+          if (hasSeason()) {
+            html += `<p class="list-detail-meta">S${expr.season} · E${expr.episode}</p>`;
+          }
           if (expr.korean_explanation) html += `<p class="list-detail-explanation">${escapeHtml(expr.korean_explanation).replace(/\n/g, '<br>')}</p>`;
           const tags = (expr.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
           if (tags) html += `<div class="card-tags">${tags}</div>`;
@@ -226,7 +267,7 @@ const App = (() => {
           ${escapeHtml(u.english)}
           <button class="tts-btn" onclick="TTS.speak('${escapeSingleQuote(u.english)}')" title="듣기">🔊</button>
         </div>
-        <div class="usage-ko">→ ${escapeHtml(u.korean)}</div>
+        <div class="usage-ko">KOR: ${escapeHtml(u.korean)}</div>
       </div>
     `).join('');
 
@@ -250,11 +291,11 @@ const App = (() => {
           <p class="card-meaning">${displayMeaning}</p>
           <div class="card-explanation">${escapeHtml(expr.korean_explanation || '').replace(/\n/g, '<br>')}</div>
           ${hasDetail ? `
-            <button class="card-detail-toggle" onclick="this.nextElementSibling.classList.toggle('open'); this.textContent = this.nextElementSibling.classList.contains('open') ? '자세히 보기 ▲' : '자세히 보기 ▼'">자세히 보기 ▼</button>
+            <button class="card-detail-toggle" onclick="App.toggleSection(this, 'details')">자세히 보기 [open]</button>
             <div class="card-detail">${escapeHtml(expr.detail_explanation).replace(/\n/g, '<br>')}</div>
           ` : ''}
           ${usageHtml ? `
-            <button class="card-usage-toggle" onclick="this.nextElementSibling.classList.toggle('open'); this.textContent = this.nextElementSibling.classList.contains('open') ? '응용 표현 ▲' : '응용 표현 ▼'">응용 표현 ▼</button>
+            <button class="card-usage-toggle" onclick="App.toggleSection(this, 'examples')">응용 표현 [open]</button>
             <div class="card-usage-list">${usageHtml}</div>
           ` : ''}
           <div class="card-tags">${tagsHtml}</div>
@@ -441,7 +482,7 @@ const App = (() => {
       korean_explanation: document.getElementById('form-explanation').value.trim(),
       detail_explanation: document.getElementById('form-detail').value.trim(),
       usage_examples: usageExamples,
-      season: hasSeason() ? (parseInt(document.getElementById('form-season').value) || 1) : 1,
+      season: hasSeason() ? (selectedSeason || parseInt(document.getElementById('form-season').value) || 1) : 1,
       episode: hasSeason() ? (parseInt(document.getElementById('form-episode').value) || 1) : 1,
       scene_note: document.getElementById('form-scene').value.trim(),
       tags,
@@ -546,7 +587,7 @@ const App = (() => {
       korean_meaning: meaning,
       korean_explanation: document.getElementById('word-explanation').value.trim(),
       usage_examples: usageExamples,
-      season: 1,
+      season: selectedSeason || 1,
       episode: 1,
       difficulty: 'beginner',
     };
@@ -639,7 +680,7 @@ const App = (() => {
       korean_explanation: document.getElementById('structure-explanation').value.trim(),
       detail_explanation: document.getElementById('structure-detail').value.trim(),
       usage_examples: usageExamples,
-      season: 1,
+      season: selectedSeason || 1,
       episode: 1,
       tags,
       difficulty: document.getElementById('structure-difficulty').value,
@@ -690,13 +731,26 @@ const App = (() => {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
+  function toggleSection(button, label) {
+    const section = button.nextElementSibling;
+    section.classList.toggle('open');
+    const isOpen = section.classList.contains('open');
+    const labels = {
+      details: ['자세히 보기', '자세히 닫기'],
+      examples: ['응용 표현', '응용 표현 닫기'],
+    };
+    const [closedLabel, openLabel] = labels[label] || ['열기', '닫기'];
+    button.textContent = isOpen ? `${openLabel} [close]` : `${closedLabel} [open]`;
+  }
+
   function getContentId() { return contentId; }
 
   return {
     init, getAllExpressions, getContentId, closeModal, addUsageRow,
     editExpression, deleteExpression, exportJSON, generateWithGPT,
     closeWordModal, generateWord, addWordUsageRow,
-    closeStructureModal, generateStructure, addStructureUsageRow
+    closeStructureModal, generateStructure, addStructureUsageRow,
+    toggleSection
   };
 })();
 

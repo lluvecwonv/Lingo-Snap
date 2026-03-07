@@ -17,8 +17,9 @@
   <header class="header">
     <div class="header-inner">
       <div class="header-left">
-        <a href="/contents" class="back-link">&larr;</a>
+        <a href="/contents" class="back-link" id="back-link" aria-label="뒤로 가기">Back</a>
         <h1 class="logo" id="content-title-display">...</h1>
+        <span class="stats-badge hidden" id="season-context-badge"></span>
         <span class="stats-badge" id="stats-total">0개</span>
       </div>
       <div class="header-actions">
@@ -48,8 +49,8 @@
           <option value="advanced">고급</option>
         </select>
         <div class="expr-view-toggle" id="expr-view-toggle">
-          <button class="expr-view-btn active" data-view="card" title="Card View">▦</button>
-          <button class="expr-view-btn" data-view="list" title="List View">☰</button>
+          <button class="expr-view-btn active" data-view="card" title="Card View">Card</button>
+          <button class="expr-view-btn" data-view="list" title="List View">List</button>
         </div>
       </div>
     </div>
@@ -106,6 +107,7 @@
             <input type="number" id="form-episode" min="1" max="99" value="1">
           </div>
         </div>
+        <p id="selected-season-note" class="form-hint hidden"></p>
 
         <label>난이도</label>
         <select id="form-difficulty">
@@ -252,12 +254,12 @@
   <div id="flashcard-popup" class="flashcard-popup">
     <div class="flashcard-inner">
       <div class="flashcard-header">
-        <span>복습 시간! 📚</span>
+        <span>복습 시간</span>
         <button class="flashcard-close" onclick="Notifications.closeFlashcard()">&times;</button>
       </div>
       <p id="flash-expression" class="flash-expression"></p>
       <button class="btn btn-icon flash-speak" onclick="TTS.speak(document.getElementById('flash-expression').textContent.replace(/\"/g,''))">🔊</button>
-      <button id="flash-reveal-btn" class="btn btn-primary btn-sm" onclick="Notifications.revealAnswer()">뜻 보기 👀</button>
+      <button id="flash-reveal-btn" class="btn btn-primary btn-sm" onclick="Notifications.revealAnswer()">뜻 보기</button>
       <div id="flash-answer" class="flash-answer hidden"></div>
       <p id="flash-source" class="flash-source"></p>
     </div>

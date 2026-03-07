@@ -17,8 +17,8 @@
     <p class="auth-subtitle">넷플릭스 & 유튜브 영어 표현 학습</p>
 
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')">로그인</button>
-      <button class="auth-tab" onclick="switchTab('register')">회원가입</button>
+      <button class="auth-tab active" onclick="switchTab(event, 'login')">로그인</button>
+      <button class="auth-tab" onclick="switchTab(event, 'register')">회원가입</button>
     </div>
 
     <!-- Login Form -->
@@ -49,7 +49,7 @@
     fetch('/api/me', { credentials: 'include' })
       .then(r => { if (r.ok) window.location.href = '/language'; });
 
-    function switchTab(tab) {
+    function switchTab(event, tab) {
       document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
       event.target.classList.add('active');
       document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');

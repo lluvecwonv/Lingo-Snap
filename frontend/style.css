@@ -1322,12 +1322,176 @@ body {
 }
 
 .back-link {
-  font-size: 1.3rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-muted);
   text-decoration: none;
   transition: color 0.2s;
 }
 .back-link:hover { color: var(--accent); }
+
+.expr-view-btn,
+.view-toggle-btn {
+  min-width: 56px;
+}
+
+.list-detail-meta {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.season-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.season-hero {
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(212, 149, 106, 0.18), rgba(255, 244, 229, 0.92));
+  border: 1px solid rgba(212, 149, 106, 0.18);
+  box-shadow: 0 18px 40px rgba(64, 38, 18, 0.08);
+}
+
+.season-kicker {
+  margin: 0 0 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.season-hero h2 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+}
+
+.season-subtitle {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.season-actions {
+  margin-top: 22px;
+}
+
+.season-create-form {
+  padding: 22px;
+  background: #fff;
+  border-radius: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.05);
+}
+
+.season-create-form label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.season-create-row {
+  display: flex;
+  gap: 12px;
+}
+
+.season-create-row input {
+  flex: 1;
+}
+
+.season-section {
+  margin-top: 28px;
+}
+
+.season-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.season-section-head h3,
+.season-summary {
+  margin: 0;
+}
+
+.season-summary {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.season-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.season-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff, #f8f4ef);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.season-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212, 149, 106, 0.35);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08);
+}
+
+.season-card-kicker {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.season-card-number {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.season-card-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .season-page {
+    padding: 24px 16px 48px;
+  }
+
+  .season-hero {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .season-hero h2 {
+    font-size: 1.6rem;
+  }
+
+  .season-create-row {
+    flex-direction: column;
+  }
+
+  .season-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 
 /* === GPT Generate === */
 .input-with-btn {
