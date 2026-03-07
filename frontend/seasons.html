@@ -25,7 +25,7 @@
     <section class="season-hero">
       <p class="season-kicker">STEP 1</p>
       <h2 id="season-hero-title">먼저 시즌을 골라줘</h2>
-      <p class="season-subtitle">선택한 시즌으로 들어가면 단어, 구문, 표현이 그 시즌 기준으로 저장돼.</p>
+      <p class="season-subtitle">시즌을 고른 다음 에피소드까지 선택하면 그 화면에서 단어, 구문, 표현을 바로 추가할 수 있어.</p>
     </section>
 
     <section class="season-actions">
@@ -114,7 +114,7 @@
     }
 
     function openSeason(season) {
-      window.location.href = `/expressions?content_id=${contentId}&season=${season}`;
+      window.location.href = `/episodes?content_id=${contentId}&season=${season}`;
     }
 
     document.getElementById('custom-season-form').addEventListener('submit', (event) => {

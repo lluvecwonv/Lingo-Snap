@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lingo Snap - Episode 선택</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <meta property="og:title" content="Lingo Snap">
+  <meta property="og:description" content="Episode별 표현 학습">
+  <meta property="og:image" content="/static/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="season-page-body">
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <a id="episodes-back-link" href="/seasons" class="back-link" aria-label="시즌 선택으로 돌아가기">Back</a>
+        <h1 class="logo" id="episode-content-title">Episode 선택</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="season-page">
+    <section class="season-hero">
+      <p class="season-kicker">STEP 2</p>
+      <h2 id="episode-hero-title">이제 에피소드를 골라줘</h2>
+      <p id="episode-subtitle" class="season-subtitle">선택한 에피소드 화면에서 바로 표현을 추가하면 시즌/에피소드가 자동으로 들어가.</p>
+    </section>
+
+    <section class="season-actions">
+      <form id="custom-episode-form" class="season-create-form">
+        <label for="custom-episode-input">새 에피소드 바로 열기</label>
+        <div class="season-create-row">
+          <input id="custom-episode-input" type="number" min="1" max="999" placeholder="Episode number" required>
+          <button type="submit" class="btn btn-primary">열기</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="season-section">
+      <div class="season-section-head">
+        <h3>기존 에피소드</h3>
+        <p id="episode-summary" class="season-summary"></p>
+      </div>
+      <div id="episode-grid" class="season-grid"></div>
+      <p id="episode-empty" class="no-results hidden">아직 저장된 에피소드가 없어. 위에서 번호를 넣고 바로 시작하면 돼.</p>
+    </section>
+  </main>
+
+  <script src="/static/api.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const contentId = params.get('content_id');
+    const season = parseInt(params.get('season') || '', 10);
+    const seasonalPlatforms = ['netflix', 'youtube'];
+
+    async function init() {
+      if (!contentId || !season) {
+        window.location.href = '/contents';
+        return;
+      }
+
+      try {
+        const user = await API.get('/me');
+        if (!user) return;
+
+        const contents = await API.get('/contents');
+        const content = (contents || []).find(item => String(item.id) === String(contentId));
+        if (!content) {
+          window.location.href = '/contents';
+          return;
+        }
+
+        if (!seasonalPlatforms.includes(content.platform)) {
+          window.location.href = `/expressions?content_id=${contentId}`;
+          return;
+        }
+
+        document.getElementById('episodes-back-link').href = `/seasons?content_id=${contentId}`;
+        document.getElementById('episode-content-title').textContent = content.title;
+        document.getElementById('episode-hero-title').textContent = `${content.title} Season ${season}의 에피소드를 골라줘`;
+        document.getElementById('episode-subtitle').textContent = `Season ${season}에서 작업할 Episode를 선택해.`;
+        document.title = `${content.title} - Season ${season} Episode 선택`;
+
+        const episodes = await API.get(`/contents/${contentId}/seasons/${season}/episodes`);
+        renderEpisodes(episodes || []);
+      } catch {
+        window.location.href = '/login';
+      }
+    }
+
+    function renderEpisodes(episodes) {
+      const grid = document.getElementById('episode-grid');
+      const empty = document.getElementById('episode-empty');
+      const summary = document.getElementById('episode-summary');
+
+      if (!episodes.length) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        summary.textContent = `Season ${season}에 저장된 에피소드 없음`;
+        return;
+      }
+
+      empty.classList.add('hidden');
+      const totalExpressions = episodes.reduce((sum, episode) => sum + episode.expression_count, 0);
+      summary.textContent = `총 ${episodes.length}개 에피소드 · ${totalExpressions}개 표현`;
+
+      grid.innerHTML = episodes.map(episode => `
+        <button class="season-card" onclick="openEpisode(${episode.episode})">
+          <span class="season-card-kicker">Episode</span>
+          <strong class="season-card-number">${episode.episode}</strong>
+          <span class="season-card-meta">${episode.expression_count} expressions</span>
+        </button>
+      `).join('');
+    }
+
+    function openEpisode(episode) {
+      window.location.href = `/expressions?content_id=${contentId}&season=${season}&episode=${episode}`;
+    }
+
+    document.getElementById('custom-episode-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const episode = parseInt(document.getElementById('custom-episode-input').value, 10);
+      if (!episode || episode < 1) return;
+      openEpisode(episode);
+    });
+
+    init();
+  </script>
+</body>
+</html>

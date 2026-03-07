@@ -6,6 +6,7 @@ const App = (() => {
   let contentPlatform = '';  // netflix, youtube, book, paper, dictionary, other
   let contentLanguage = 'english';  // english / japanese
   let selectedSeason = null;
+  let selectedEpisode = null;
   let expressions = [];
   let editingId = null;
   let exprViewMode = localStorage.getItem('expr_view_mode') || 'card';
@@ -22,6 +23,7 @@ const App = (() => {
     const params = new URLSearchParams(window.location.search);
     contentId = params.get('content_id');
     selectedSeason = parseInt(params.get('season') || '', 10) || null;
+    selectedEpisode = parseInt(params.get('episode') || '', 10) || null;
     if (!contentId) { window.location.href = '/contents'; return; }
 
     TTS.init();
@@ -46,18 +48,22 @@ const App = (() => {
           window.location.href = `/seasons?content_id=${contentId}`;
           return false;
         }
+        if (hasSeason() && !selectedEpisode) {
+          window.location.href = `/episodes?content_id=${contentId}&season=${selectedSeason}`;
+          return false;
+        }
         document.getElementById('content-title-display').textContent = c.title;
         const seasonBadge = document.getElementById('season-context-badge');
         if (seasonBadge) {
-          if (hasSeason() && selectedSeason) {
-            seasonBadge.textContent = `Season ${selectedSeason}`;
+          if (hasSeason() && selectedSeason && selectedEpisode) {
+            seasonBadge.textContent = `Season ${selectedSeason} · Episode ${selectedEpisode}`;
             seasonBadge.classList.remove('hidden');
           } else {
             seasonBadge.classList.add('hidden');
           }
         }
         const backLink = document.getElementById('back-link');
-        if (backLink && hasSeason()) backLink.href = `/seasons?content_id=${contentId}`;
+        if (backLink && hasSeason()) backLink.href = `/episodes?content_id=${contentId}&season=${selectedSeason}`;
         document.title = `${c.title} - Lingo Snap`;
       }
     } catch {}
@@ -69,20 +75,20 @@ const App = (() => {
 
   function applyPlatformUI() {
     const showSeason = hasSeason();
-    const seasonLocked = showSeason && selectedSeason;
+    const episodeLocked = showSeason && selectedSeason && selectedEpisode;
 
     // Filter dropdowns
-    document.getElementById('filter-season').style.display = showSeason && !seasonLocked ? '' : 'none';
-    document.getElementById('filter-episode').style.display = showSeason ? '' : 'none';
+    document.getElementById('filter-season').style.display = showSeason && !episodeLocked ? '' : 'none';
+    document.getElementById('filter-episode').style.display = showSeason && !episodeLocked ? '' : 'none';
 
     // Form fields (season/episode row)
     const seasonRow = document.getElementById('form-season-row');
-    if (seasonRow) seasonRow.style.display = showSeason && !seasonLocked ? '' : 'none';
+    if (seasonRow) seasonRow.style.display = showSeason ? '' : 'none';
 
     const seasonHint = document.getElementById('selected-season-note');
     if (seasonHint) {
-      if (seasonLocked) {
-        seasonHint.textContent = `현재 Season ${selectedSeason}에 저장됩니다.`;
+      if (episodeLocked) {
+        seasonHint.textContent = `현재 Season ${selectedSeason}, Episode ${selectedEpisode}로 자동 입력됩니다.`;
         seasonHint.classList.remove('hidden');
       } else {
         seasonHint.classList.add('hidden');
@@ -104,6 +110,7 @@ const App = (() => {
     let query = `/contents/${contentId}/expressions?`;
     if (search) query += `search=${encodeURIComponent(search)}&`;
     if (selectedSeason && hasSeason()) query += `season=${selectedSeason}&`;
+    if (selectedEpisode && hasSeason()) query += `episode=${selectedEpisode}&`;
     if (season && hasSeason()) query += `season=${season}&`;
     if (episode && hasSeason()) query += `episode=${episode}&`;
     if (difficulty) query += `difficulty=${difficulty}&`;
@@ -170,9 +177,11 @@ const App = (() => {
     if (hasSeason()) {
       const groups = {};
       expressions.forEach(expr => {
-        const key = selectedSeason ? `${expr.episode}` : `${expr.season}-${expr.episode}`;
+        const key = selectedEpisode ? `${expr.id}` : selectedSeason ? `${expr.episode}` : `${expr.season}-${expr.episode}`;
         if (!groups[key]) {
-          groups[key] = selectedSeason
+          groups[key] = selectedEpisode
+            ? { items: [] }
+            : selectedSeason
             ? { episode: expr.episode, items: [] }
             : { season: expr.season, episode: expr.episode, items: [] };
         }
@@ -180,6 +189,7 @@ const App = (() => {
       });
 
       const sortedKeys = Object.keys(groups).sort((a, b) => {
+        if (selectedEpisode) return Number(b) - Number(a);
         if (selectedSeason) return Number(a) - Number(b);
         const [sa, ea] = a.split('-').map(Number);
         const [sb, eb] = b.split('-').map(Number);
@@ -188,7 +198,9 @@ const App = (() => {
 
       grid.innerHTML = sortedKeys.map(key => {
         const group = groups[key];
-        const header = selectedSeason
+        const header = selectedEpisode
+          ? ''
+          : selectedSeason
           ? `<div class="group-header">Episode ${group.episode}</div>`
           : `<div class="group-header">Season ${group.season} - Episode ${group.episode}</div>`;
         const cards = group.items.map(expr => renderSingleCard(expr, query)).join('');
@@ -432,6 +444,10 @@ const App = (() => {
         (expr.usage_examples || []).forEach(u => addUsageRow(u.english, u.korean));
       }
     } else {
+      if (hasSeason()) {
+        document.getElementById('form-season').value = selectedSeason || 1;
+        document.getElementById('form-episode').value = selectedEpisode || 1;
+      }
       addUsageRow();
     }
 
@@ -483,7 +499,7 @@ const App = (() => {
       detail_explanation: document.getElementById('form-detail').value.trim(),
       usage_examples: usageExamples,
       season: hasSeason() ? (selectedSeason || parseInt(document.getElementById('form-season').value) || 1) : 1,
-      episode: hasSeason() ? (parseInt(document.getElementById('form-episode').value) || 1) : 1,
+      episode: hasSeason() ? (selectedEpisode || parseInt(document.getElementById('form-episode').value) || 1) : 1,
       scene_note: document.getElementById('form-scene').value.trim(),
       tags,
       difficulty: document.getElementById('form-difficulty').value,
@@ -588,7 +604,7 @@ const App = (() => {
       korean_explanation: document.getElementById('word-explanation').value.trim(),
       usage_examples: usageExamples,
       season: selectedSeason || 1,
-      episode: 1,
+      episode: selectedEpisode || 1,
       difficulty: 'beginner',
     };
 
@@ -681,7 +697,7 @@ const App = (() => {
       detail_explanation: document.getElementById('structure-detail').value.trim(),
       usage_examples: usageExamples,
       season: selectedSeason || 1,
-      episode: 1,
+      episode: selectedEpisode || 1,
       tags,
       difficulty: document.getElementById('structure-difficulty').value,
     };

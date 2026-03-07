@@ -105,6 +105,38 @@ def list_seasons(
     ]
 
 
+@router.get("/contents/{content_id}/seasons/{season}/episodes")
+def list_episodes(
+    content_id: int,
+    season: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _check_content_access(content_id, user, db)
+
+    expressions = db.query(Expression).filter(
+        Expression.content_id == content_id,
+        Expression.season == season,
+    ).all()
+
+    episodes = {}
+    for expr in expressions:
+        episode_no = expr.episode or 1
+        bucket = episodes.setdefault(
+            episode_no,
+            {"episode": episode_no, "expression_count": 0},
+        )
+        bucket["expression_count"] += 1
+
+    return [
+        {
+            "episode": episode_no,
+            "expression_count": data["expression_count"],
+        }
+        for episode_no, data in sorted(episodes.items())
+    ]
+
+
 @router.post("/contents/{content_id}/expressions")
 def create_expression(
     content_id: int,

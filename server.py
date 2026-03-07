@@ -52,6 +52,11 @@ async def seasons_page():
     return FileResponse(os.path.join(frontend_dir, "seasons.html"))
 
 
+@app.get("/episodes")
+async def episodes_page():
+    return FileResponse(os.path.join(frontend_dir, "episodes.html"))
+
+
 @app.get("/expressions")
 async def expressions_page():
     return FileResponse(os.path.join(frontend_dir, "index.html"))
