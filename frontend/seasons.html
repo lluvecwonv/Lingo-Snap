@@ -11,40 +11,47 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="season-page-body">
-  <header class="header">
-    <div class="header-inner">
-      <div class="header-left">
-        <a href="/contents" class="back-link" aria-label="콘텐츠 목록으로 돌아가기">Back</a>
-        <h1 class="logo" id="season-content-title">Season 선택</h1>
-      </div>
+<body class="nf-body">
+  <!-- Netflix-style top bar -->
+  <header class="nf-header">
+    <div class="nf-header-inner">
+      <a href="/contents" class="nf-back" aria-label="콘텐츠 목록으로 돌아가기">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </a>
+      <h1 class="nf-logo" id="season-content-title">Season 선택</h1>
     </div>
   </header>
 
-  <main class="season-page">
-    <section class="season-hero">
-      <p class="season-kicker">STEP 1</p>
-      <h2 id="season-hero-title">먼저 시즌을 골라줘</h2>
-      <p class="season-subtitle">시즌을 고른 다음 에피소드까지 선택하면 그 화면에서 단어, 구문, 표현을 바로 추가할 수 있어.</p>
+  <main class="nf-main">
+    <!-- Hero banner -->
+    <section class="nf-hero">
+      <div class="nf-hero-overlay"></div>
+      <div class="nf-hero-content">
+        <span class="nf-badge">SEASON SELECT</span>
+        <h2 id="season-hero-title" class="nf-hero-title">먼저 시즌을 골라줘</h2>
+        <p class="nf-hero-sub">시즌을 고른 다음 에피소드까지 선택하면 표현을 바로 추가할 수 있어.</p>
+      </div>
     </section>
 
-    <section class="season-actions">
-      <form id="custom-season-form" class="season-create-form">
+    <!-- Quick open -->
+    <section class="nf-quick">
+      <form id="custom-season-form" class="nf-quick-form">
         <label for="custom-season-input">새 시즌 바로 열기</label>
-        <div class="season-create-row">
-          <input id="custom-season-input" type="number" min="1" max="99" placeholder="Season number" required>
-          <button type="submit" class="btn btn-primary">열기</button>
+        <div class="nf-quick-row">
+          <input id="custom-season-input" type="number" min="1" max="99" placeholder="시즌 번호 입력" required>
+          <button type="submit" class="nf-btn-red">열기</button>
         </div>
       </form>
     </section>
 
-    <section class="season-section">
-      <div class="season-section-head">
-        <h3>기존 시즌</h3>
-        <p id="season-summary" class="season-summary"></p>
+    <!-- Season grid -->
+    <section class="nf-section">
+      <div class="nf-section-head">
+        <h3>시즌 목록</h3>
+        <p id="season-summary" class="nf-summary"></p>
       </div>
-      <div id="season-grid" class="season-grid"></div>
-      <p id="season-empty" class="no-results hidden">아직 저장된 시즌이 없어. 위에서 시즌 번호를 입력해서 바로 시작하면 돼.</p>
+      <div id="season-grid" class="nf-grid"></div>
+      <p id="season-empty" class="nf-empty hidden">아직 저장된 시즌이 없어. 위에서 시즌 번호를 입력해서 바로 시작하면 돼.</p>
     </section>
   </main>
 
@@ -77,8 +84,14 @@
         }
 
         document.getElementById('season-content-title').textContent = content.title;
-        document.getElementById('season-hero-title').textContent = `${content.title}의 시즌을 골라줘`;
+        document.getElementById('season-hero-title').textContent = `${content.title}`;
         document.title = `${content.title} - Season 선택`;
+
+        // Set thumbnail as hero background if available
+        if (content.thumbnail_url) {
+          const hero = document.querySelector('.nf-hero');
+          hero.style.backgroundImage = `url(${content.thumbnail_url})`;
+        }
 
         const seasons = await API.get(`/contents/${contentId}/seasons`);
         renderSeasons(seasons || []);
@@ -101,14 +114,16 @@
 
       empty.classList.add('hidden');
       const totalExpressions = seasons.reduce((sum, season) => sum + season.expression_count, 0);
-      summary.textContent = `총 ${seasons.length}개 시즌 · ${totalExpressions}개 표현`;
+      summary.textContent = `${seasons.length}개 시즌 · ${totalExpressions}개 표현`;
 
       grid.innerHTML = seasons.map(season => `
-        <button class="season-card" onclick="openSeason(${season.season})">
-          <span class="season-card-kicker">Season</span>
-          <strong class="season-card-number">${season.season}</strong>
-          <span class="season-card-meta">Episode ${season.episode_count}</span>
-          <span class="season-card-meta">${season.expression_count} expressions</span>
+        <button class="nf-card" onclick="openSeason(${season.season})">
+          <div class="nf-card-num">S${season.season}</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Season ${season.season}</span>
+            <span class="nf-card-meta">${season.episode_count} episodes · ${season.expression_count} expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
       `).join('');
     }
