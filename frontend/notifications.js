@@ -13,14 +13,12 @@ const Notifications = (() => {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-    // Resume if suspended (browser autoplay policy)
     if (audioCtx.state === 'suspended') {
       audioCtx.resume();
     }
     return audioCtx;
   }
 
-  // Warm up AudioContext on ANY user interaction so later timer-based calls work
   function warmUpAudio() {
     getAudioContext();
   }
@@ -30,23 +28,20 @@ const Notifications = (() => {
     if (!soundEnabled) return;
     try {
       const ctx = getAudioContext();
-
-      // First tone
       const o1 = ctx.createOscillator();
       const g1 = ctx.createGain();
       o1.type = 'sine';
-      o1.frequency.value = 880;  // A5
+      o1.frequency.value = 880;
       g1.gain.setValueAtTime(0.3, ctx.currentTime);
       g1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
       o1.connect(g1).connect(ctx.destination);
       o1.start(ctx.currentTime);
       o1.stop(ctx.currentTime + 0.3);
 
-      // Second tone (higher, slight delay)
       const o2 = ctx.createOscillator();
       const g2 = ctx.createGain();
       o2.type = 'sine';
-      o2.frequency.value = 1175; // D6
+      o2.frequency.value = 1175;
       g2.gain.setValueAtTime(0.3, ctx.currentTime + 0.15);
       g2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
       o2.connect(g2).connect(ctx.destination);
@@ -64,8 +59,7 @@ const Notifications = (() => {
     if (savedInterval) intervalMs = parseInt(savedInterval);
     if (enabled) scheduleNext();
 
-    // Warm up AudioContext on first user interaction (click/touch/key)
-    // so that timer-based playChime() calls are not blocked by autoplay policy
+    // Warm up AudioContext on first user interaction
     const warmUp = () => {
       warmUpAudio();
       document.removeEventListener('click', warmUp);
@@ -76,10 +70,8 @@ const Notifications = (() => {
     document.addEventListener('touchstart', warmUp, { once: true });
     document.addEventListener('keydown', warmUp, { once: true });
 
-    // Listen for localStorage changes from other tabs to stay in sync
     window.addEventListener('storage', (e) => {
       if (e.key === 'notif_last_time') {
-        // Another tab just fired — reschedule from that timestamp
         console.log('[Notif] Another tab fired, rescheduling');
         scheduleNext();
       }
@@ -113,15 +105,11 @@ const Notifications = (() => {
   function scheduleNext() {
     if (timerId) clearTimeout(timerId);
     if (!enabled) return;
-
     const lastTime = parseInt(localStorage.getItem('notif_last_time') || '0');
     const elapsed = Date.now() - lastTime;
-    // Add small random jitter (0-2s) so tabs don't all wake at exactly the same time
     const jitter = Math.random() * 2000;
     const delay = Math.max(0, intervalMs - elapsed) + jitter;
-
     console.log(`[Notif] Next notification in ${Math.round(delay / 1000)}s`);
-
     timerId = setTimeout(() => {
       showNotification();
       scheduleNext();
@@ -129,61 +117,39 @@ const Notifications = (() => {
   }
 
   async function showNotification() {
-    // Cross-tab dedup: re-check lastTime right before firing
     const lastTime = parseInt(localStorage.getItem('notif_last_time') || '0');
     const elapsed = Date.now() - lastTime;
-    // If another tab already fired within this interval, skip
     if (elapsed < intervalMs * 0.8) {
       console.log(`[Notif] Another tab already fired ${Math.round(elapsed / 1000)}s ago, skipping`);
       return;
     }
-
-    // Claim this slot immediately (before async API call) to block other tabs
     localStorage.setItem('notif_last_time', Date.now().toString());
 
     let expr = null;
-
-    // Try global random endpoint (all contents)
-    try {
-      expr = await API.get('/expressions/random');
-    } catch {}
-
-    // Fallback: try current content if on expressions page
+    try { expr = await API.get('/expressions/random'); } catch {}
     if (!expr) {
       const cid = typeof App !== 'undefined' && App.getContentId ? App.getContentId() : null;
       if (cid) {
         try { expr = await API.get(`/contents/${cid}/expressions/random`); } catch {}
       }
     }
-
-    if (!expr) {
-      console.log('[Notif] No expression found, skipping');
-      return;
-    }
+    if (!expr) { console.log('[Notif] No expression found, skipping'); return; }
 
     console.log('[Notif] Showing:', expr.expression);
-
-    // Play chime sound
     playChime();
 
-    // Always show macOS system notification (works even in another app)
     if ('Notification' in window && Notification.permission === 'granted') {
-      // Use unique tag each time so macOS shows a NEW popup every time
       const notif = new Notification(expr.expression, {
         body: expr.korean_meaning,
         tag: 'lingo-snap-' + Date.now(),
         requireInteraction: true
       });
-      notif.onclick = () => {
-        window.focus();
-        showFlashcardPopup(expr);
-      };
+      notif.onclick = () => { window.focus(); showFlashcardPopup(expr); };
     } else {
       console.warn('[Notif] Permission not granted:',
         'Notification' in window ? Notification.permission : 'not supported');
     }
 
-    // Also show in-page flashcard popup if tab is visible
     if (document.visibilityState === 'visible') {
       showFlashcardPopup(expr);
     }
@@ -198,12 +164,9 @@ const Notifications = (() => {
     // Wire up the speaker button to TTS
     const speakBtn = popup.querySelector('.flash-speak');
     if (speakBtn && typeof TTS !== 'undefined') {
-      // Replace the button to remove any old listeners
       const newBtn = speakBtn.cloneNode(true);
       speakBtn.parentNode.replaceChild(newBtn, speakBtn);
-      newBtn.addEventListener('click', () => {
-        TTS.speak(expr.expression);
-      });
+      newBtn.addEventListener('click', () => { TTS.speak(expr.expression); });
     }
 
     const src = document.getElementById('flash-source');
@@ -224,7 +187,6 @@ const Notifications = (() => {
     document.getElementById('flash-reveal-btn').classList.remove('hidden');
 
     popup.classList.add('show');
-
     setTimeout(() => closeFlashcard(), 60000);
   }
 
@@ -252,9 +214,7 @@ const Notifications = (() => {
     else if (timerId) { clearTimeout(timerId); timerId = null; }
   }
 
-  function triggerNow() {
-    showNotification();
-  }
+  function triggerNow() { showNotification(); }
 
   function toggleSound(on) {
     soundEnabled = on;

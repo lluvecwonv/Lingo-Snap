@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netflix Style Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="nf-body">
+  <header class="nf-header">
+    <div class="nf-header-inner">
+      <a href="#" class="nf-back">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </a>
+      <h1 class="nf-logo">Emily in Paris</h1>
+    </div>
+  </header>
+
+  <main class="nf-main">
+    <section class="nf-hero">
+      <div class="nf-hero-overlay"></div>
+      <div class="nf-hero-content">
+        <span class="nf-badge">SEASON SELECT</span>
+        <h2 class="nf-hero-title">Emily in Paris</h2>
+        <p class="nf-hero-sub">시즌을 고른 다음 에피소드까지 선택하면 표현을 바로 추가할 수 있어.</p>
+      </div>
+    </section>
+
+    <section class="nf-quick">
+      <div class="nf-quick-form">
+        <label>새 시즌 바로 열기</label>
+        <div class="nf-quick-row">
+          <input type="number" placeholder="시즌 번호 입력">
+          <button class="nf-btn-red">열기</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="nf-section">
+      <div class="nf-section-head">
+        <h3>시즌 목록</h3>
+        <p class="nf-summary">4개 시즌 · 142개 표현</p>
+      </div>
+      <div class="nf-grid">
+        <button class="nf-card">
+          <div class="nf-card-num">S1</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Season 1</span>
+            <span class="nf-card-meta">10 episodes · 45 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">S2</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Season 2</span>
+            <span class="nf-card-meta">10 episodes · 38 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">S3</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Season 3</span>
+            <span class="nf-card-meta">10 episodes · 33 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">S4</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Season 4</span>
+            <span class="nf-card-meta">10 episodes · 26 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Episode preview below -->
+    <section class="nf-section" style="margin-top:56px;">
+      <div class="nf-section-head">
+        <h3 style="color:#E50914;">--- Episode 페이지 미리보기 ---</h3>
+      </div>
+    </section>
+
+    <section class="nf-hero nf-hero-sm" style="margin-top:16px;">
+      <div class="nf-hero-overlay"></div>
+      <div class="nf-hero-content">
+        <span class="nf-badge">EPISODE SELECT</span>
+        <h2 class="nf-hero-title">Emily in Paris</h2>
+        <p class="nf-hero-sub">Season 2에서 학습할 에피소드를 선택해.</p>
+      </div>
+    </section>
+
+    <section class="nf-quick">
+      <div class="nf-quick-form">
+        <label>새 에피소드 바로 열기</label>
+        <div class="nf-quick-row">
+          <input type="number" placeholder="에피소드 번호 입력">
+          <button class="nf-btn-red">열기</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="nf-section">
+      <div class="nf-section-head">
+        <h3>에피소드 목록</h3>
+        <p class="nf-summary">10개 에피소드 · 38개 표현</p>
+      </div>
+      <div class="nf-grid">
+        <button class="nf-card">
+          <div class="nf-card-num">E1</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Episode 1</span>
+            <span class="nf-card-meta">5 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">E2</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Episode 2</span>
+            <span class="nf-card-meta">3 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">E3</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Episode 3</span>
+            <span class="nf-card-meta">7 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

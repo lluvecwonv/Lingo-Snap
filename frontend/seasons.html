@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body class="nf-body">
-  <!-- Netflix-style top bar -->
   <header class="nf-header">
     <div class="nf-header-inner">
       <a href="/contents" class="nf-back" aria-label="콘텐츠 목록으로 돌아가기">
@@ -23,7 +22,6 @@
   </header>
 
   <main class="nf-main">
-    <!-- Hero banner -->
     <section class="nf-hero">
       <div class="nf-hero-overlay"></div>
       <div class="nf-hero-content">
@@ -33,7 +31,6 @@
       </div>
     </section>
 
-    <!-- Quick open -->
     <section class="nf-quick">
       <form id="custom-season-form" class="nf-quick-form">
         <label for="custom-season-input">새 시즌 바로 열기</label>
@@ -44,7 +41,6 @@
       </form>
     </section>
 
-    <!-- Season grid -->
     <section class="nf-section">
       <div class="nf-section-head">
         <h3>시즌 목록</h3>
@@ -66,62 +62,46 @@
         window.location.href = '/contents';
         return;
       }
-
       try {
         const user = await API.get('/me');
         if (!user) return;
-
         const contents = await API.get('/contents');
         const content = (contents || []).find(item => String(item.id) === String(contentId));
-        if (!content) {
-          window.location.href = '/contents';
-          return;
-        }
-
+        if (!content) { window.location.href = '/contents'; return; }
         if (!seasonalPlatforms.includes(content.platform)) {
           window.location.href = `/expressions?content_id=${contentId}`;
           return;
         }
-
         document.getElementById('season-content-title').textContent = content.title;
         document.getElementById('season-hero-title').textContent = `${content.title}`;
         document.title = `${content.title} - Season 선택`;
-
-        // Set thumbnail as hero background if available
         if (content.thumbnail_url) {
-          const hero = document.querySelector('.nf-hero');
-          hero.style.backgroundImage = `url(${content.thumbnail_url})`;
+          document.querySelector('.nf-hero').style.backgroundImage = `url(${content.thumbnail_url})`;
         }
-
         const seasons = await API.get(`/contents/${contentId}/seasons`);
         renderSeasons(seasons || []);
-      } catch {
-        window.location.href = '/login';
-      }
+      } catch { window.location.href = '/login'; }
     }
 
     function renderSeasons(seasons) {
       const grid = document.getElementById('season-grid');
       const empty = document.getElementById('season-empty');
       const summary = document.getElementById('season-summary');
-
       if (!seasons.length) {
         grid.innerHTML = '';
         empty.classList.remove('hidden');
         summary.textContent = '기존에 저장된 시즌 없음';
         return;
       }
-
       empty.classList.add('hidden');
-      const totalExpressions = seasons.reduce((sum, season) => sum + season.expression_count, 0);
+      const totalExpressions = seasons.reduce((sum, s) => sum + s.expression_count, 0);
       summary.textContent = `${seasons.length}개 시즌 · ${totalExpressions}개 표현`;
-
-      grid.innerHTML = seasons.map(season => `
-        <button class="nf-card" onclick="openSeason(${season.season})">
-          <div class="nf-card-num">S${season.season}</div>
+      grid.innerHTML = seasons.map(s => `
+        <button class="nf-card" onclick="openSeason(${s.season})">
+          <div class="nf-card-num">S${s.season}</div>
           <div class="nf-card-info">
-            <span class="nf-card-label">Season ${season.season}</span>
-            <span class="nf-card-meta">${season.episode_count} episodes · ${season.expression_count} expressions</span>
+            <span class="nf-card-label">Season ${s.season}</span>
+            <span class="nf-card-meta">${s.episode_count} episodes · ${s.expression_count} expressions</span>
           </div>
           <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
@@ -132,8 +112,8 @@
       window.location.href = `/episodes?content_id=${contentId}&season=${season}`;
     }
 
-    document.getElementById('custom-season-form').addEventListener('submit', (event) => {
-      event.preventDefault();
+    document.getElementById('custom-season-form').addEventListener('submit', (e) => {
+      e.preventDefault();
       const season = parseInt(document.getElementById('custom-season-input').value, 10);
       if (!season || season < 1) return;
       openSeason(season);

@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body class="nf-body">
-  <!-- Netflix-style top bar -->
   <header class="nf-header">
     <div class="nf-header-inner">
       <a id="episodes-back-link" href="/seasons" class="nf-back" aria-label="시즌 선택으로 돌아가기">
@@ -23,7 +22,6 @@
   </header>
 
   <main class="nf-main">
-    <!-- Hero banner -->
     <section class="nf-hero nf-hero-sm">
       <div class="nf-hero-overlay"></div>
       <div class="nf-hero-content">
@@ -33,7 +31,6 @@
       </div>
     </section>
 
-    <!-- Quick open -->
     <section class="nf-quick">
       <form id="custom-episode-form" class="nf-quick-form">
         <label for="custom-episode-input">새 에피소드 바로 열기</label>
@@ -44,7 +41,6 @@
       </form>
     </section>
 
-    <!-- Episode grid -->
     <section class="nf-section">
       <div class="nf-section-head">
         <h3>에피소드 목록</h3>
@@ -63,68 +59,49 @@
     const seasonalPlatforms = ['netflix', 'youtube'];
 
     async function init() {
-      if (!contentId || !season) {
-        window.location.href = '/contents';
-        return;
-      }
-
+      if (!contentId || !season) { window.location.href = '/contents'; return; }
       try {
         const user = await API.get('/me');
         if (!user) return;
-
         const contents = await API.get('/contents');
         const content = (contents || []).find(item => String(item.id) === String(contentId));
-        if (!content) {
-          window.location.href = '/contents';
-          return;
-        }
-
+        if (!content) { window.location.href = '/contents'; return; }
         if (!seasonalPlatforms.includes(content.platform)) {
           window.location.href = `/expressions?content_id=${contentId}`;
           return;
         }
-
         document.getElementById('episodes-back-link').href = `/seasons?content_id=${contentId}`;
         document.getElementById('episode-content-title').textContent = `${content.title} · S${season}`;
         document.getElementById('episode-hero-title').textContent = `${content.title}`;
         document.getElementById('episode-subtitle').textContent = `Season ${season}에서 학습할 에피소드를 선택해.`;
         document.title = `${content.title} - Season ${season} Episode 선택`;
-
-        // Set thumbnail as hero background if available
         if (content.thumbnail_url) {
-          const hero = document.querySelector('.nf-hero');
-          hero.style.backgroundImage = `url(${content.thumbnail_url})`;
+          document.querySelector('.nf-hero').style.backgroundImage = `url(${content.thumbnail_url})`;
         }
-
         const episodes = await API.get(`/contents/${contentId}/seasons/${season}/episodes`);
         renderEpisodes(episodes || []);
-      } catch {
-        window.location.href = '/login';
-      }
+      } catch { window.location.href = '/login'; }
     }
 
     function renderEpisodes(episodes) {
       const grid = document.getElementById('episode-grid');
       const empty = document.getElementById('episode-empty');
       const summary = document.getElementById('episode-summary');
-
       if (!episodes.length) {
         grid.innerHTML = '';
         empty.classList.remove('hidden');
         summary.textContent = `Season ${season}에 저장된 에피소드 없음`;
         return;
       }
-
       empty.classList.add('hidden');
-      const totalExpressions = episodes.reduce((sum, episode) => sum + episode.expression_count, 0);
+      const totalExpressions = episodes.reduce((sum, ep) => sum + ep.expression_count, 0);
       summary.textContent = `${episodes.length}개 에피소드 · ${totalExpressions}개 표현`;
-
-      grid.innerHTML = episodes.map(episode => `
-        <button class="nf-card" onclick="openEpisode(${episode.episode})">
-          <div class="nf-card-num">E${episode.episode}</div>
+      grid.innerHTML = episodes.map(ep => `
+        <button class="nf-card" onclick="openEpisode(${ep.episode})">
+          <div class="nf-card-num">E${ep.episode}</div>
           <div class="nf-card-info">
-            <span class="nf-card-label">Episode ${episode.episode}</span>
-            <span class="nf-card-meta">${episode.expression_count} expressions</span>
+            <span class="nf-card-label">Episode ${ep.episode}</span>
+            <span class="nf-card-meta">${ep.expression_count} expressions</span>
           </div>
           <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
@@ -135,8 +112,8 @@
       window.location.href = `/expressions?content_id=${contentId}&season=${season}&episode=${episode}`;
     }
 
-    document.getElementById('custom-episode-form').addEventListener('submit', (event) => {
-      event.preventDefault();
+    document.getElementById('custom-episode-form').addEventListener('submit', (e) => {
+      e.preventDefault();
       const episode = parseInt(document.getElementById('custom-episode-input').value, 10);
       if (!episode || episode < 1) return;
       openEpisode(episode);

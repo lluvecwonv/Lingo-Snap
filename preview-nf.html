@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netflix Style Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    .hidden { display: none !important; }
+
+    .nf-body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #141414;
+      color: #e5e5e5;
+      line-height: 1.65;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .nf-header {
+      background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+      padding: 16px 24px;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+    }
+    .nf-header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .nf-back {
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: transform 0.2s;
+    }
+    .nf-back:hover { transform: scale(1.15); }
+    .nf-logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .nf-hero {
+      position: relative;
+      min-height: 340px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 24px 40px;
+      overflow: hidden;
+    }
+    .nf-hero-sm { min-height: 280px; }
+    .nf-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, #141414 0%, rgba(20,20,20,0.7) 40%, rgba(20,20,20,0.3) 100%);
+    }
+    .nf-hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .nf-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: #E50914;
+      background: rgba(229,9,20,0.15);
+      padding: 4px 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    .nf-hero-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 0 0 8px;
+      line-height: 1.2;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    .nf-hero-sub {
+      color: #aaa;
+      font-size: 0.95rem;
+      margin: 0;
+      max-width: 500px;
+    }
+    .nf-main { padding-bottom: 64px; }
+    .nf-quick {
+      max-width: 1100px;
+      margin: -20px auto 0;
+      padding: 0 24px;
+      position: relative;
+      z-index: 2;
+    }
+    .nf-quick-form {
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+    .nf-quick-form label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #999;
+      margin-bottom: 10px;
+    }
+    .nf-quick-row { display: flex; gap: 12px; }
+    .nf-quick-row input {
+      flex: 1;
+      padding: 12px 16px;
+      background: #2b2b2b;
+      border: 1.5px solid #444;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: #fff;
+      transition: all 0.2s;
+    }
+    .nf-quick-row input::placeholder { color: #666; }
+    .nf-quick-row input:focus {
+      outline: none;
+      border-color: #E50914;
+      box-shadow: 0 0 0 3px rgba(229,9,20,0.2);
+    }
+    .nf-btn-red {
+      padding: 12px 28px;
+      background: #E50914;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .nf-btn-red:hover { background: #f40612; transform: scale(1.02); }
+    .nf-section {
+      max-width: 1100px;
+      margin: 32px auto 0;
+      padding: 0 24px;
+    }
+    .nf-section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .nf-section-head h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
+    .nf-summary { color: #777; font-size: 0.85rem; margin: 0; }
+    .nf-grid { display: flex; flex-direction: column; gap: 8px; }
+    .nf-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      padding: 16px 20px;
+      background: #1f1f1f;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      text-align: left;
+      color: #e5e5e5;
+    }
+    .nf-card:hover {
+      background: #2a2a2a;
+      border-color: #444;
+      transform: translateX(4px);
+    }
+    .nf-card-num {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #E50914;
+      min-width: 56px;
+      text-align: center;
+      line-height: 1;
+    }
+    .nf-card-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .nf-card-label { font-size: 0.95rem; font-weight: 600; color: #fff; }
+    .nf-card-meta { font-size: 0.8rem; color: #777; }
+    .nf-card-arrow { color: #555; flex-shrink: 0; transition: all 0.2s; }
+    .nf-card:hover .nf-card-arrow { color: #E50914; transform: translateX(3px); }
+    .nf-divider {
+      max-width: 1100px;
+      margin: 56px auto 0;
+      padding: 0 24px;
+      border-top: 1px solid #333;
+      padding-top: 40px;
+      text-align: center;
+      color: #555;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body class="nf-body">
+  <header class="nf-header">
+    <div class="nf-header-inner">
+      <a href="#" class="nf-back">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </a>
+      <h1 class="nf-logo">Emily in Paris</h1>
+    </div>
+  </header>
+
+  <main class="nf-main">
+    <!-- SEASON PAGE -->
+    <section class="nf-hero">
+      <div class="nf-hero-overlay"></div>
+      <div class="nf-hero-content">
+        <span class="nf-badge">SEASON SELECT</span>
+        <h2 class="nf-hero-title">Emily in Paris</h2>
+        <p class="nf-hero-sub">시즌을 고른 다음 에피소드까지 선택하면 표현을 바로 추가할 수 있어.</p>
+      </div>
+    </section>
+
+    <section class="nf-quick">
+      <div class="nf-quick-form">
+        <label>새 시즌 바로 열기</label>
+        <div class="nf-quick-row">
+          <input type="number" placeholder="시즌 번호 입력">
+          <button class="nf-btn-red">열기</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="nf-section">
+      <div class="nf-section-head">
+        <h3>시즌 목록</h3>
+        <p class="nf-summary">4개 시즌 · 142개 표현</p>
+      </div>
+      <div class="nf-grid">
+        <button class="nf-card">
+          <div class="nf-card-num">S1</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Season 1</span>
+            <span class="nf-card-meta">10 episodes · 45 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">S2</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Season 2</span>
+            <span class="nf-card-meta">10 episodes · 38 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">S3</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Season 3</span>
+            <span class="nf-card-meta">10 episodes · 33 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">S4</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Season 4</span>
+            <span class="nf-card-meta">10 episodes · 26 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- DIVIDER -->
+    <div class="nf-divider">EPISODE PAGE PREVIEW</div>
+
+    <!-- EPISODE PAGE -->
+    <section class="nf-hero nf-hero-sm" style="margin-top: 32px;">
+      <div class="nf-hero-overlay"></div>
+      <div class="nf-hero-content">
+        <span class="nf-badge">EPISODE SELECT</span>
+        <h2 class="nf-hero-title">Emily in Paris</h2>
+        <p class="nf-hero-sub">Season 2에서 학습할 에피소드를 선택해.</p>
+      </div>
+    </section>
+
+    <section class="nf-quick">
+      <div class="nf-quick-form">
+        <label>새 에피소드 바로 열기</label>
+        <div class="nf-quick-row">
+          <input type="number" placeholder="에피소드 번호 입력">
+          <button class="nf-btn-red">열기</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="nf-section">
+      <div class="nf-section-head">
+        <h3>에피소드 목록</h3>
+        <p class="nf-summary">10개 에피소드 · 38개 표현</p>
+      </div>
+      <div class="nf-grid">
+        <button class="nf-card">
+          <div class="nf-card-num">E1</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Episode 1</span>
+            <span class="nf-card-meta">5 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">E2</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Episode 2</span>
+            <span class="nf-card-meta">3 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">E3</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Episode 3</span>
+            <span class="nf-card-meta">7 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">E4</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Episode 4</span>
+            <span class="nf-card-meta">4 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="nf-card">
+          <div class="nf-card-num">E5</div>
+          <div class="nf-card-info">
+            <span class="nf-card-label">Episode 5</span>
+            <span class="nf-card-meta">2 expressions</span>
+          </div>
+          <svg class="nf-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
