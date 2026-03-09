@@ -6,11 +6,31 @@ const Notifications = (() => {
   let enabled = true;
   let soundEnabled = true;
 
+  // Shared AudioContext — created once on first user gesture to avoid autoplay blocking
+  let audioCtx = null;
+
+  function getAudioContext() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    // Resume if suspended (browser autoplay policy)
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  }
+
+  // Warm up AudioContext on ANY user interaction so later timer-based calls work
+  function warmUpAudio() {
+    getAudioContext();
+  }
+
   // "띠링" chime using Web Audio API (no file needed)
   function playChime() {
     if (!soundEnabled) return;
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = getAudioContext();
+
       // First tone
       const o1 = ctx.createOscillator();
       const g1 = ctx.createGain();
@@ -32,8 +52,6 @@ const Notifications = (() => {
       o2.connect(g2).connect(ctx.destination);
       o2.start(ctx.currentTime + 0.15);
       o2.stop(ctx.currentTime + 0.5);
-
-      setTimeout(() => ctx.close(), 1000);
     } catch (e) {
       console.warn('[Notif] Sound error:', e);
     }
@@ -45,6 +63,18 @@ const Notifications = (() => {
     const savedInterval = localStorage.getItem('notif_interval');
     if (savedInterval) intervalMs = parseInt(savedInterval);
     if (enabled) scheduleNext();
+
+    // Warm up AudioContext on first user interaction (click/touch/key)
+    // so that timer-based playChime() calls are not blocked by autoplay policy
+    const warmUp = () => {
+      warmUpAudio();
+      document.removeEventListener('click', warmUp);
+      document.removeEventListener('touchstart', warmUp);
+      document.removeEventListener('keydown', warmUp);
+    };
+    document.addEventListener('click', warmUp, { once: true });
+    document.addEventListener('touchstart', warmUp, { once: true });
+    document.addEventListener('keydown', warmUp, { once: true });
 
     // Listen for localStorage changes from other tabs to stay in sync
     window.addEventListener('storage', (e) => {
@@ -164,6 +194,17 @@ const Notifications = (() => {
     if (!popup) return;
 
     document.getElementById('flash-expression').textContent = expr.expression;
+
+    // Wire up the speaker button to TTS
+    const speakBtn = popup.querySelector('.flash-speak');
+    if (speakBtn && typeof TTS !== 'undefined') {
+      // Replace the button to remove any old listeners
+      const newBtn = speakBtn.cloneNode(true);
+      speakBtn.parentNode.replaceChild(newBtn, speakBtn);
+      newBtn.addEventListener('click', () => {
+        TTS.speak(expr.expression);
+      });
+    }
 
     const src = document.getElementById('flash-source');
     if (src) {
