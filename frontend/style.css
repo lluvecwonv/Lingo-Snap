@@ -1702,13 +1702,13 @@ mark {
 }
 
 /* ============================================
-   Netflix-Style Dark Theme (Seasons/Episodes)
+   Seasons/Episodes Light Theme
    ============================================ */
 
 .nf-body {
   font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #141414;
-  color: #e5e5e5;
+  background: var(--surface);
+  color: var(--text);
   line-height: 1.65;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -1716,12 +1716,11 @@ mark {
 
 /* Header */
 .nf-header {
-  background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
   padding: 16px 24px;
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 100;
 }
 
@@ -1734,39 +1733,39 @@ mark {
 }
 
 .nf-back {
-  color: #fff;
+  color: var(--text-muted);
   text-decoration: none;
   display: flex;
   align-items: center;
-  transition: transform 0.2s;
+  transition: color 0.2s;
 }
-.nf-back:hover { transform: scale(1.15); }
+.nf-back:hover { color: var(--accent); }
 
 .nf-logo {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   letter-spacing: -0.3px;
 }
 
 /* Hero banner */
 .nf-hero {
   position: relative;
-  min-height: 340px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 240px;
+  background: linear-gradient(135deg, var(--accent-soft) 0%, rgba(212,149,106,0.15) 100%);
   background-size: cover;
   background-position: center;
   display: flex;
   align-items: flex-end;
-  padding: 0 24px 40px;
+  padding: 0 24px 32px;
   overflow: hidden;
 }
-.nf-hero-sm { min-height: 280px; }
+.nf-hero-sm { min-height: 200px; }
 
 .nf-hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, #141414 0%, rgba(20,20,20,0.7) 40%, rgba(20,20,20,0.3) 100%);
+  background: linear-gradient(0deg, var(--surface) 0%, rgba(247,247,245,0.6) 40%, rgba(247,247,245,0.2) 100%);
 }
 
 .nf-hero-content {
@@ -1782,24 +1781,23 @@ mark {
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.15em;
-  color: #E50914;
-  background: rgba(229,9,20,0.15);
+  color: var(--accent);
+  background: var(--accent-soft);
   padding: 4px 12px;
   border-radius: 4px;
   margin-bottom: 12px;
 }
 
 .nf-hero-title {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--text);
   margin: 0 0 8px;
   line-height: 1.2;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
 
 .nf-hero-sub {
-  color: #aaa;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   margin: 0;
   max-width: 500px;
@@ -1813,24 +1811,25 @@ mark {
 /* Quick open form */
 .nf-quick {
   max-width: 1100px;
-  margin: -20px auto 0;
+  margin: -16px auto 0;
   padding: 0 24px;
   position: relative;
   z-index: 2;
 }
 
 .nf-quick-form {
-  background: #1f1f1f;
-  border: 1px solid #333;
+  background: var(--white);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 20px 24px;
+  box-shadow: var(--shadow);
 }
 
 .nf-quick-form label {
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #999;
+  color: var(--text-secondary);
   margin-bottom: 10px;
 }
 
@@ -1842,25 +1841,26 @@ mark {
 .nf-quick-row input {
   flex: 1;
   padding: 12px 16px;
-  background: #2b2b2b;
-  border: 1.5px solid #444;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: 0.95rem;
   font-family: inherit;
-  color: #fff;
+  color: var(--text);
   transition: all 0.2s;
 }
-.nf-quick-row input::placeholder { color: #666; }
+.nf-quick-row input::placeholder { color: var(--text-muted); }
 .nf-quick-row input:focus {
   outline: none;
-  border-color: #E50914;
-  box-shadow: 0 0 0 3px rgba(229,9,20,0.2);
+  border-color: var(--accent);
+  background: var(--white);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .nf-btn-red {
   padding: 12px 28px;
-  background: #E50914;
-  color: #fff;
+  background: var(--accent);
+  color: var(--white);
   border: none;
   border-radius: 8px;
   font-size: 0.92rem;
@@ -1870,7 +1870,7 @@ mark {
   transition: all 0.2s;
   white-space: nowrap;
 }
-.nf-btn-red:hover { background: #f40612; transform: scale(1.02); }
+.nf-btn-red:hover { background: var(--accent-dim); transform: scale(1.02); }
 
 /* Section */
 .nf-section {
@@ -1890,12 +1890,12 @@ mark {
 .nf-section-head h3 {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   margin: 0;
 }
 
 .nf-summary {
-  color: #777;
+  color: var(--text-muted);
   font-size: 0.85rem;
   margin: 0;
 }
@@ -1913,25 +1913,26 @@ mark {
   gap: 16px;
   width: 100%;
   padding: 16px 20px;
-  background: #1f1f1f;
-  border: 1px solid #2a2a2a;
+  background: var(--white);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
   text-align: left;
-  color: #e5e5e5;
+  color: var(--text);
 }
 .nf-card:hover {
-  background: #2a2a2a;
-  border-color: #444;
+  background: var(--surface);
+  border-color: var(--accent);
   transform: translateX(4px);
+  box-shadow: var(--shadow-hover);
 }
 
 .nf-card-num {
   font-size: 1.6rem;
   font-weight: 800;
-  color: #E50914;
+  color: var(--accent);
   min-width: 56px;
   text-align: center;
   line-height: 1;
@@ -1947,36 +1948,36 @@ mark {
 .nf-card-label {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--text);
 }
 
 .nf-card-meta {
   font-size: 0.8rem;
-  color: #777;
+  color: var(--text-muted);
 }
 
 .nf-card-arrow {
-  color: #555;
+  color: var(--text-muted);
   flex-shrink: 0;
   transition: all 0.2s;
 }
-.nf-card:hover .nf-card-arrow { color: #E50914; transform: translateX(3px); }
+.nf-card:hover .nf-card-arrow { color: var(--accent); transform: translateX(3px); }
 
 /* Empty state */
 .nf-empty {
   text-align: center;
   padding: 48px 20px;
-  color: #555;
+  color: var(--text-muted);
   font-size: 0.92rem;
 }
 
 /* Responsive */
 @media (max-width: 640px) {
   .nf-header { padding: 12px 16px; }
-  .nf-hero { min-height: 260px; padding: 0 16px 32px; }
-  .nf-hero-sm { min-height: 220px; }
+  .nf-hero { min-height: 180px; padding: 0 16px 24px; }
+  .nf-hero-sm { min-height: 160px; }
   .nf-hero-title { font-size: 1.6rem; }
-  .nf-quick { padding: 0 16px; margin-top: -16px; }
+  .nf-quick { padding: 0 16px; margin-top: -12px; }
   .nf-quick-form { padding: 16px; }
   .nf-quick-row { flex-direction: column; }
   .nf-section { padding: 0 16px; }
