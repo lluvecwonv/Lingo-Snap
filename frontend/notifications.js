@@ -186,6 +186,14 @@ const Notifications = (() => {
     answer.classList.add('hidden');
     document.getElementById('flash-reveal-btn').classList.remove('hidden');
 
+    // "보기" button — navigate to the expression's page
+    const viewBtn = document.getElementById('flash-view-btn');
+    if (viewBtn && expr.content_id) {
+      const url = `/expressions?content_id=${expr.content_id}&season=${expr.season || 1}&episode=${expr.episode || 1}`;
+      viewBtn.onclick = () => { window.location.href = url; };
+      viewBtn.classList.remove('hidden');
+    }
+
     popup.classList.add('show');
     setTimeout(() => closeFlashcard(), 60000);
   }

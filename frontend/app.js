@@ -81,18 +81,13 @@ const App = (() => {
     document.getElementById('filter-season').style.display = showSeason && !episodeLocked ? '' : 'none';
     document.getElementById('filter-episode').style.display = showSeason && !episodeLocked ? '' : 'none';
 
-    // Form fields (season/episode row)
+    // Form fields (season/episode row) — hide when already locked via navigation
     const seasonRow = document.getElementById('form-season-row');
-    if (seasonRow) seasonRow.style.display = showSeason ? '' : 'none';
+    if (seasonRow) seasonRow.style.display = showSeason && !episodeLocked ? '' : 'none';
 
     const seasonHint = document.getElementById('selected-season-note');
     if (seasonHint) {
-      if (episodeLocked) {
-        seasonHint.textContent = `현재 Season ${selectedSeason}, Episode ${selectedEpisode}로 자동 입력됩니다.`;
-        seasonHint.classList.remove('hidden');
-      } else {
-        seasonHint.classList.add('hidden');
-      }
+      seasonHint.classList.add('hidden');
     }
 
     // Scene note (only for video content)
