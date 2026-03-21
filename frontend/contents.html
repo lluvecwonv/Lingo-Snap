@@ -413,6 +413,14 @@
 
     // Settings & Notifications
     document.getElementById('settings-btn').addEventListener('click', () => {
+      // Sync current notification state to modal UI before opening
+      document.getElementById('notif-enabled-check').checked = Notifications.enabled;
+      document.getElementById('notif-sound-check').checked = Notifications.soundEnabled;
+      const savedInterval = localStorage.getItem('notif_interval');
+      if (savedInterval) {
+        const sel = document.getElementById('notif-interval-select');
+        if (sel.querySelector(`option[value="${savedInterval}"]`)) sel.value = savedInterval;
+      }
       document.getElementById('settings-modal').classList.remove('hidden');
     });
     document.getElementById('notif-enabled-check').addEventListener('change', (e) => {

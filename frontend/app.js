@@ -359,6 +359,14 @@ const App = (() => {
     document.getElementById('structure-form').addEventListener('submit', handleStructureSubmit);
     document.getElementById('review-now-btn').addEventListener('click', () => Notifications.triggerNow());
     document.getElementById('notif-toggle-btn').addEventListener('click', () => {
+      // Sync current notification state to modal UI before opening
+      document.getElementById('notif-enabled-check').checked = Notifications.enabled;
+      document.getElementById('notif-sound-check').checked = Notifications.soundEnabled;
+      const savedInterval = localStorage.getItem('notif_interval');
+      if (savedInterval) {
+        const sel = document.getElementById('notif-interval-select');
+        if (sel.querySelector(`option[value="${savedInterval}"]`)) sel.value = savedInterval;
+      }
       document.getElementById('notif-modal').classList.remove('hidden');
     });
     document.getElementById('notif-enabled-check').addEventListener('change', (e) => {
@@ -370,10 +378,6 @@ const App = (() => {
     document.getElementById('notif-sound-check').addEventListener('change', (e) => {
       Notifications.toggleSound(e.target.checked);
     });
-    // Sync sound setting
-    if (localStorage.getItem('notif_sound') === 'false') {
-      document.getElementById('notif-sound-check').checked = false;
-    }
     document.getElementById('export-btn').addEventListener('click', exportJSON);
 
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
