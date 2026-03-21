@@ -13,13 +13,13 @@
   ],
   "routes": [
     { "src": "/static/(.*)", "dest": "/frontend/$1" },
-    { "src": "/login", "dest": "/api/index.py" },
-    { "src": "/language", "dest": "/api/index.py" },
-    { "src": "/contents", "dest": "/api/index.py" },
-    { "src": "/seasons", "dest": "/api/index.py" },
-    { "src": "/episodes", "dest": "/api/index.py" },
-    { "src": "/expressions", "dest": "/api/index.py" },
+    { "src": "/login", "dest": "/frontend/login.html" },
+    { "src": "/language", "dest": "/frontend/language.html" },
+    { "src": "/contents", "dest": "/frontend/contents.html" },
+    { "src": "/seasons", "dest": "/frontend/seasons.html" },
+    { "src": "/episodes", "dest": "/frontend/episodes.html" },
+    { "src": "/expressions", "dest": "/frontend/index.html" },
     { "src": "/api/(.*)", "dest": "/api/index.py" },
-    { "src": "/", "dest": "/api/index.py" }
+    { "src": "/", "dest": "/frontend/login.html" }
   ]
 }
