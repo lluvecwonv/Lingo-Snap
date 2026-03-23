@@ -9,7 +9,7 @@
   <meta property="og:description" content="넷플릭스 & 유튜브 영어 표현 학습">
   <meta property="og:image" content="/static/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css?v=20260323">
+  <link rel="stylesheet" href="/static/style.css?v=20260324">
 </head>
 <body>
   <header class="header">
@@ -98,6 +98,10 @@
           <label class="platform-label">
             <input type="radio" name="platform" value="other">
             <span class="platform-badge other">기타</span>
+          </label>
+          <label class="platform-label">
+            <input type="radio" name="platform" value="archive">
+            <span class="platform-badge archive">보관함</span>
           </label>
         </div>
 
@@ -192,7 +196,7 @@
 
     const platformLabels = {
       netflix: 'Netflix', youtube: 'YouTube', book: '원서',
-      paper: '논문', dictionary: '단어사전', other: '기타'
+      paper: '논문', dictionary: '단어사전', other: '기타', archive: '보관함'
     };
 
     // Deterministic pastel color from content ID
@@ -301,7 +305,7 @@
         counts[c.platform] = (counts[c.platform] || 0) + 1;
       });
 
-      const platformOrder = ['netflix', 'youtube', 'book', 'paper', 'dictionary', 'other'];
+      const platformOrder = ['netflix', 'youtube', 'book', 'paper', 'dictionary', 'other', 'archive'];
       let html = `<button class="category-tab ${activeTab === 'all' ? 'active' : ''}" data-tab="all">전체<span class="tab-count">${langContents.length}</span></button>`;
 
       platformOrder.forEach(p => {
@@ -458,6 +462,7 @@
       paper: { ph: 'e.g. Causal Estimation of Memorisation Profiles', hint: '논문 제목을 입력하세요' },
       dictionary: { ph: 'e.g. 일상 단어장', hint: '단어장 이름을 자유롭게 지어주세요' },
       other: { ph: 'e.g. 팟캐스트, 강의 등', hint: '카테고리 : 제목 형태로 입력하세요' },
+      archive: { ph: 'e.g. 보관할 콘텐츠 제목', hint: '더 이상 활발히 사용하지 않는 콘텐츠를 보관합니다' },
     };
     document.querySelectorAll('input[name="platform"]').forEach(radio => {
       radio.addEventListener('change', () => {
