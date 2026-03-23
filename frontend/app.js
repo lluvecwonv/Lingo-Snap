@@ -81,9 +81,12 @@ const App = (() => {
     document.getElementById('filter-season').style.display = showSeason && !episodeLocked ? '' : 'none';
     document.getElementById('filter-episode').style.display = showSeason && !episodeLocked ? '' : 'none';
 
-    // Form fields (season/episode row) — show when editing or when not locked
+    // Form fields (season/episode row) — show when editing (forceShowSeason) or when not locked
     const seasonRow = document.getElementById('form-season-row');
-    if (seasonRow) seasonRow.style.display = (showSeason && (!episodeLocked || forceShowSeason)) ? '' : 'none';
+    if (seasonRow) {
+      const shouldShow = showSeason && (!episodeLocked || forceShowSeason);
+      seasonRow.style.display = shouldShow ? 'grid' : 'none';
+    }
 
     const seasonHint = document.getElementById('selected-season-note');
     if (seasonHint) {
