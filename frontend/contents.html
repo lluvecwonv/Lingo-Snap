@@ -433,9 +433,7 @@
     document.getElementById('notif-sound-check').addEventListener('change', (e) => {
       Notifications.toggleSound(e.target.checked);
     });
-    document.getElementById('settings-modal').addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden');
-    });
+    // Settings modal — no overlay-click close (prevents accidental dismissal)
 
     // Init notifications on contents page too
     Notifications.init();
@@ -469,10 +467,7 @@
       });
     });
 
-    // Close modal on overlay click
-    document.getElementById('content-modal').addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal-overlay')) e.target.classList.add('hidden');
-    });
+    // Content modal — no overlay-click close (prevents accidental dismissal)
 
     function escapeHtml(str) {
       return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

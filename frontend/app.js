@@ -73,7 +73,7 @@ const App = (() => {
     return true;
   }
 
-  function applyPlatformUI() {
+  function applyPlatformUI(forceShowSeason = false) {
     const showSeason = hasSeason();
     const episodeLocked = showSeason && selectedSeason && selectedEpisode;
 
@@ -81,9 +81,9 @@ const App = (() => {
     document.getElementById('filter-season').style.display = showSeason && !episodeLocked ? '' : 'none';
     document.getElementById('filter-episode').style.display = showSeason && !episodeLocked ? '' : 'none';
 
-    // Form fields (season/episode row) — hide when already locked via navigation
+    // Form fields (season/episode row) — show when editing or when not locked
     const seasonRow = document.getElementById('form-season-row');
-    if (seasonRow) seasonRow.style.display = showSeason && !episodeLocked ? '' : 'none';
+    if (seasonRow) seasonRow.style.display = (showSeason && (!episodeLocked || forceShowSeason)) ? '' : 'none';
 
     const seasonHint = document.getElementById('selected-season-note');
     if (seasonHint) {
@@ -375,11 +375,8 @@ const App = (() => {
     });
     document.getElementById('export-btn').addEventListener('click', exportJSON);
 
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.add('hidden');
-      });
-    });
+    // Modal overlay click — no longer auto-closes (prevents accidental data loss)
+    // Users must use ✕ or 취소 button to close modals
   }
 
   // ─── GPT Generate ───
@@ -423,8 +420,8 @@ const App = (() => {
     document.getElementById('usage-examples-list').innerHTML = '';
     document.getElementById('modal-title').textContent = id ? '표현 수정' : '새 표현 추가';
 
-    // Show/hide season fields in modal
-    applyPlatformUI();
+    // Show/hide season fields in modal — when editing, always show season/episode fields
+    applyPlatformUI(!!id);
 
     if (id) {
       const expr = expressions.find(e => e.id === id);
@@ -497,8 +494,8 @@ const App = (() => {
       korean_explanation: document.getElementById('form-explanation').value.trim(),
       detail_explanation: document.getElementById('form-detail').value.trim(),
       usage_examples: usageExamples,
-      season: hasSeason() ? (selectedSeason || parseInt(document.getElementById('form-season').value) || 1) : 1,
-      episode: hasSeason() ? (selectedEpisode || parseInt(document.getElementById('form-episode').value) || 1) : 1,
+      season: hasSeason() ? (editingId ? (parseInt(document.getElementById('form-season').value) || selectedSeason || 1) : (selectedSeason || parseInt(document.getElementById('form-season').value) || 1)) : 1,
+      episode: hasSeason() ? (editingId ? (parseInt(document.getElementById('form-episode').value) || selectedEpisode || 1) : (selectedEpisode || parseInt(document.getElementById('form-episode').value) || 1)) : 1,
       scene_note: document.getElementById('form-scene').value.trim(),
       tags,
       difficulty: document.getElementById('form-difficulty').value,
